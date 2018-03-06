@@ -7,5 +7,7 @@
 </ion-header>
 
 <ion-content padding>
-
+  <h1 class="countdown-timer" *ngIf="!this.hidevalue">
+    {{this.maxTime}}
+  </h1>
 </ion-content>

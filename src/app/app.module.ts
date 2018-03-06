@@ -8,8 +8,13 @@ import { FriendsPage } from '../pages/friends/friends';
 import { SettingsPage } from '../pages/settings/settings';
 import { TabsPage } from '../pages/tabs/tabs';
 
+// Temporary until we get video chat working
+import { HomePage } from '../pages/home/home';
+
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+
+import { NativeAudio } from '@ionic-native/native-audio';
 
 @NgModule({
   declarations: [
@@ -17,7 +22,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     CozePage,
     FriendsPage,
     SettingsPage,
-    TabsPage
+    TabsPage,
+    HomePage
   ],
   imports: [
     BrowserModule,
@@ -29,9 +35,11 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     CozePage,
     FriendsPage,
     SettingsPage,
-    TabsPage
+    TabsPage,
+    HomePage
   ],
   providers: [
+    NativeAudio,
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler}

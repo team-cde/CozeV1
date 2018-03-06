@@ -25681,3 +25681,9 @@ ion-navbar.toolbar {
 page-coze ion-content {
   background-image: url("assets/img/logo.png");
 }
+
+page-coze ion-content h1.countdown-timer {
+  text-align: center;
+  font-size: 8em;
+  color: blue;
+}

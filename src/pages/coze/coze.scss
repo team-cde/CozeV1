@@ -1,5 +1,11 @@
 page-coze {
   ion-content {
     background-image: url('assets/img/logo.png');
+
+    h1.countdown-timer {
+      text-align: center;
+      font-size: 8em;
+      color: blue;
+    }
   }
 }

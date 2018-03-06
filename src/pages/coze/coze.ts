@@ -8,10 +8,10 @@ import { NavController } from 'ionic-angular';
 export class CozePage {
   timer: number;
   maxTime: any=30;
-  hidevalue: boolean;st
+  hidevalue: boolean;
 
   constructor(public navCtrl: NavController) {
-    
+
   }
 
   StartTimer(){
