@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+  <script data-ionic="inject">
+    (function(w){var i=w.Ionic=w.Ionic||{};i.version='3.9.2';i.angular='5.0.3';i.staticDir='build/';})(window);
+  </script>
   <meta charset="UTF-8">
   <title>Ionic App</title>
   <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -26,6 +29,23 @@
         .catch(err => console.error('Error', err));
     }
   </script>-->
+
+  <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyA-ghCvFKtmWslyfdv7tfijtgfrSTkV_ZA",
+      authDomain: "cozeserver.firebaseapp.com",
+      databaseURL: "https://cozeserver.firebaseio.com",
+      projectId: "cozeserver",
+      storageBucket: "",
+      messagingSenderId: "1048041411921"
+    };
+    firebase.initializeApp(config);
+  </script>
+
+  <script src="https://cdn.firebase.com/libs/firebaseui/2.6.2/firebaseui.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.6.2/firebaseui.css" />
 
   <link href="build/main.css" rel="stylesheet">
 

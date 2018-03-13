@@ -25682,8 +25682,12 @@ page-coze ion-content {
   background-image: url("assets/img/logo.png");
 }
 
-page-coze ion-content h1.countdown-timer {
+page-coze ion-content h1.coze-timer {
   text-align: center;
   font-size: 8em;
   color: blue;
+}
+
+page-coze ion-content h1.coze-timer-header {
+  text-align: center;
 }

@@ -3,17 +3,20 @@ import { Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-import { TabsPage } from '../pages/tabs/tabs';
+// import { TabsPage } from '../pages/tabs/tabs';
+import { LoginPage } from '../pages/login/login';
 
 // This is temporary so we can port over the WebRTC funcitonality to our Coze page
-import { HomePage } from '../pages/home/home';
+// import { HomePage } from '../pages/home/home';
 
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
-  //rootPage:any = TabsPage;
-  rootPage:any = HomePage;
+  rootPage:any = LoginPage;
+
+  // Uncomment this to make the home page the test WebRTC page
+  //rootPage:any = HomePage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
     platform.ready().then(() => {

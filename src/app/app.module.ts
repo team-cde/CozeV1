@@ -7,6 +7,7 @@ import { CozePage } from '../pages/coze/coze';
 import { FriendsPage } from '../pages/friends/friends';
 import { SettingsPage } from '../pages/settings/settings';
 import { TabsPage } from '../pages/tabs/tabs';
+import { LoginPage } from '../pages/login/login';
 
 // Temporary until we get video chat working
 import { HomePage } from '../pages/home/home';
@@ -16,6 +17,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { NativeAudio } from '@ionic-native/native-audio';
 
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireAuthModule } from 'angularfire2/auth';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+
+import { FIREBASE_CREDENTIALS } from './firebase.credentials';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -23,11 +30,15 @@ import { NativeAudio } from '@ionic-native/native-audio';
     FriendsPage,
     SettingsPage,
     TabsPage,
+    LoginPage,
     HomePage
   ],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp),
+    AngularFireModule.initializeApp(FIREBASE_CREDENTIALS),
+    AngularFireAuthModule,
+    AngularFireDatabaseModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -36,6 +47,7 @@ import { NativeAudio } from '@ionic-native/native-audio';
     FriendsPage,
     SettingsPage,
     TabsPage,
+    LoginPage,
     HomePage
   ],
   providers: [

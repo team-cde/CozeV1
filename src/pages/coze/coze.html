@@ -7,7 +7,62 @@
 </ion-header>
 
 <ion-content padding>
-  <h1 class="countdown-timer" *ngIf="!this.hidevalue">
-    {{this.maxTime}}
-  </h1>
+    <ion-list *ngIf="!this.readyForCoze">
+      <ion-item>
+        <h1 class="coze-timer-header">
+          Time to Next Coze:
+        </h1>
+      </ion-item>
+      <ion-item>
+        <h1 class="coze-timer">
+          {{this.timeToCoze}}
+        </h1>
+      </ion-item>
+    </ion-list>
+    <ion-list *ngIf="this.readyForCoze">
+        <ion-item>
+            <ion-label floating>Call ID:</ion-label>
+            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>
+        </ion-item>
+    </ion-list>
+    <ion-grid *ngIf="this.readyForCoze">
+        <ion-row>
+          <h3>
+            My Call ID: {{myCallId}}
+          </h3>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <button *ngIf="showCall" ion-button block (click)='MakeCall(calleeId)'>Call</button>
+            </ion-col>
+            <ion-col>
+                <button *ngIf="showHangup" ion-button block color="danger" (click)='HangUp()'>Hangup</button>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <button *ngIf="showAnswer" ion-button block color="secondary" (click)='AnswerCall(incomingCallId)'>Answer</button>
+            </ion-col>
+            <ion-col>
+                <button *ngIf="showReject" ion-button block color="danger">Reject</button>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <p *ngIf="showStatus" [innerHtml]="status"></p>
+            </ion-col>
+        </ion-row>
+        <ion-row *ngIf="showRemoteVideo">
+            <ion-col>
+                <p>Remote Stream</p>
+                <div id="remote" style="width:100%;"></div>
+            </ion-col>
+        </ion-row>
+        <ion-row *ngIf="showMyVideo">
+            <ion-col>
+                <p>My Stream</p>
+                <div id="mini"></div>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
 </ion-content>

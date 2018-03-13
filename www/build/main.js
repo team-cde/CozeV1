@@ -1,6 +1,6 @@
 webpackJsonp([0],{
 
-/***/ 110:
+/***/ 144:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -13,11 +13,11 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 110;
+webpackEmptyAsyncContext.id = 144;
 
 /***/ }),
 
-/***/ 151:
+/***/ 187:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -30,17 +30,156 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 151;
+webpackEmptyAsyncContext.id = 187;
 
 /***/ }),
 
-/***/ 195:
+/***/ 230:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CozePage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(231);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tabs_tabs__ = __webpack_require__(244);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+
+/**
+ * Generated class for the LoginPage page.
+ *
+ * See https://ionicframework.com/docs/components/#navigation for more info on
+ * Ionic pages and navigation.
+ */
+var LoginPage = (function () {
+    function LoginPage(afAuth, navCtrl, navParams) {
+        this.afAuth = afAuth;
+        this.navCtrl = navCtrl;
+        this.navParams = navParams;
+        this.user = {};
+    }
+    LoginPage.prototype.login = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password)];
+                    case 1:
+                        result = _a.sent();
+                        if (result) {
+                            this.navCtrl.setRoot(__WEBPACK_IMPORTED_MODULE_3__tabs_tabs__["a" /* TabsPage */]);
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        console.error(e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    LoginPage.prototype.register = function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var result, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        if (!!user.email.endsWith(".edu")) return [3 /*break*/, 1];
+                        this.loginError = "You must register with a .edu e-mail address";
+                        return [3 /*break*/, 3];
+                    case 1: return [4 /*yield*/, this.afAuth.auth.createUserWithEmailAndPassword(user.email, user.password)];
+                    case 2:
+                        result = _a.sent();
+                        if (result) {
+                            this.navCtrl.setRoot(__WEBPACK_IMPORTED_MODULE_3__tabs_tabs__["a" /* TabsPage */]);
+                        }
+                        _a.label = 3;
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_2 = _a.sent();
+                        console.error(e_2);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    LoginPage.prototype.ionViewDidLoad = function () {
+        console.log('ionViewDidLoad LoginPage');
+    };
+    LoginPage = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
+            selector: 'page-login',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/login/login.html"*/'<!--\n  Generated template for the LoginPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>Login</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <ion-item>\n    <ion-label floating>Email Address</ion-label>\n    <ion-input type="text" [(ngModel)]="user.email"></ion-input>\n  </ion-item>\n\n  <ion-item>\n    <ion-label floating>Password</ion-label>\n    <ion-input type="password" [(ngModel)]="user.password"></ion-input>\n  </ion-item>\n\n  <button ion-button (click)="login(user)">Login</button>\n  <button ion-button color="light" (click)="register(user)">Register</button>\n  <br><br>\n  {{loginError}}\n\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/login/login.html"*/,
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__["a" /* AngularFireAuth */],
+            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* NavParams */]])
+    ], LoginPage);
+    return LoginPage;
+}());
+
+//# sourceMappingURL=login.js.map
+
+/***/ }),
+
+/***/ 244:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TabsPage; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__coze_coze__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__friends_friends__ = __webpack_require__(246);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__settings_settings__ = __webpack_require__(247);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -52,30 +191,241 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-var CozePage = (function () {
-    function CozePage(navCtrl) {
-        this.navCtrl = navCtrl;
-        this.maxTime = 30;
+
+
+var TabsPage = (function () {
+    function TabsPage() {
+        this.tab1Root = __WEBPACK_IMPORTED_MODULE_1__coze_coze__["a" /* CozePage */];
+        this.tab2Root = __WEBPACK_IMPORTED_MODULE_2__friends_friends__["a" /* FriendsPage */];
+        this.tab3Root = __WEBPACK_IMPORTED_MODULE_3__settings_settings__["a" /* SettingsPage */];
     }
-    CozePage.prototype.StartTimer = function () {
+    TabsPage = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
+            selector: 'TabsPage',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/tabs/tabs.html"*/'<ion-tabs>\n  <ion-tab [root]="tab1Root" tabIcon="md-bonfire"></ion-tab>\n  <ion-tab [root]="tab2Root" tabIcon="md-contacts"></ion-tab>\n  <ion-tab [root]="tab3Root" tabIcon="md-settings"></ion-tab>\n</ion-tabs>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/tabs/tabs.html"*/
+        }),
+        __metadata("design:paramtypes", [])
+    ], TabsPage);
+    return TabsPage;
+}());
+
+//# sourceMappingURL=tabs.js.map
+
+/***/ }),
+
+/***/ 245:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CozePage; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(125);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+var CozePage = (function () {
+    function CozePage(navCtrl, nativeAudio) {
+        this.navCtrl = navCtrl;
+        this.nativeAudio = nativeAudio;
+        // TODO: This needs to be set to the countdown until the next Coze
+        this.timeToCoze = 5;
+        this.callTimeLeft = 30;
+        this.showRemoteVideo = true;
+        this.showMyVideo = true;
+        this.incomingCallId = 0;
+        this.InitializeApiRTC();
+        this.nativeAudio.preloadComplex('uniqueI1', 'assets/tone.mp3', 1, 1, 0).then(function (succ) {
+            console.log("suu", succ);
+        }, function (err) {
+            console.log("err", err);
+        });
+        this.StartCozeTimer();
+    }
+    CozePage.prototype.InitializeApiRTC = function () {
         var _this = this;
-        this.timer = setTimeout(function (x) {
-            if (_this.maxTime <= 0) { }
-            _this.maxTime -= 1;
-            if (_this.maxTime > 0) {
-                _this.hidevalue = false;
-                _this.StartTimer();
+        //apiRTC initialization
+        apiRTC.init({
+            apiKey: "819abef1fde1c833e0601ec6dd4a8226",
+            // apiCCId : "2",
+            onReady: function (e) {
+                _this.sessionReadyHandler(e);
+            }
+        });
+    };
+    CozePage.prototype.sessionReadyHandler = function (e) {
+        this.myCallId = apiRTC.session.apiCCId;
+        //this.InitializeControls();
+        this.AddEventListeners();
+        this.InitializeWebRTCClient();
+    };
+    CozePage.prototype.InitializeWebRTCClient = function () {
+        this.webRTCClient = apiRTC.session.createWebRTCClient({
+            status: "status" //Optionnal
+        });
+        /*    this.webRTCClient.setAllowMultipleCalls(true);
+            this.webRTCClient.setVideoBandwidth(300);
+            this.webRTCClient.setUserAcceptOnIncomingCall(true);*/
+    };
+    CozePage.prototype.InitializeControls = function () {
+        this.showCall = true;
+        this.showAnswer = false;
+        this.showHangup = false;
+        this.showReject = false;
+    };
+    CozePage.prototype.InitializeControlsForIncomingCall = function () {
+        this.showCall = false;
+        this.showAnswer = true;
+        this.showReject = true;
+        this.showHangup = true;
+        this.nativeAudio.loop('uniqueI1').then(function (succ) {
+            console.log("succ", succ);
+        }, function (err) {
+            console.log("err", err);
+        });
+    };
+    CozePage.prototype.InitializeControlsForHangup = function () {
+        this.showCall = true;
+        this.showAnswer = false;
+        this.showReject = false;
+        this.showHangup = false;
+    };
+    CozePage.prototype.UpdateControlsOnAnswer = function () {
+        this.showAnswer = false;
+        this.showReject = false;
+        this.showHangup = true;
+        this.showCall = false;
+    };
+    CozePage.prototype.UpdateControlsOnReject = function () {
+        this.showAnswer = false;
+        this.showReject = false;
+        this.showHangup = false;
+        this.showCall = true;
+    };
+    CozePage.prototype.RemoveMediaElements = function (callId) {
+        this.webRTCClient.removeElementFromDiv('mini', 'miniElt-' + callId);
+        this.webRTCClient.removeElementFromDiv('remote', 'remoteElt-' + callId);
+    };
+    CozePage.prototype.AddStreamInDiv = function (stream, callType, divId, mediaEltId, style, muted) {
+        var mediaElt = null;
+        var divElement = null;
+        if (callType === 'audio') {
+            mediaElt = document.createElement("audio");
+        }
+        else {
+            mediaElt = document.createElement("video");
+        }
+        mediaElt.id = mediaEltId;
+        mediaElt.autoplay = true;
+        mediaElt.muted = muted;
+        mediaElt.style.width = style.width;
+        mediaElt.style.height = style.height;
+        divElement = document.getElementById(divId);
+        divElement.appendChild(mediaElt);
+        this.webRTCClient.attachMediaStream(mediaElt, stream);
+    };
+    CozePage.prototype.AddEventListeners = function () {
+        var _this = this;
+        apiRTC.addEventListener("userMediaSuccess", function (e) {
+            _this.showStatus = true;
+            _this.showMyVideo = true;
+            _this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "mini", 'miniElt-' + e.detail.callId, {
+                width: "128px",
+                height: "96px"
+            }, true);
+        });
+        apiRTC.addEventListener("userMediaError", function (e) {
+            _this.InitializeControlsForHangup();
+            _this.status = _this.status + "<br/> The following error has occurred <br/> " + e;
+        });
+        apiRTC.addEventListener("incomingCall", function (e) {
+            // this.InitializeControlsForIncomingCall();
+            _this.incomingCallId = e.detail.callId;
+            _this.AnswerCall(_this.incomingCallId);
+            _this.StartCallTimer();
+        });
+        apiRTC.addEventListener("hangup", function (e) {
+            if (e.detail.lastEstablishedCall === true) {
+                _this.InitializeControlsForHangup();
+            }
+            _this.status = _this.status + "<br/> The call has been hunged up due to the following reasons <br/> " + e.detail.reason;
+            _this.RemoveMediaElements(e.detail.callId);
+        });
+        apiRTC.addEventListener("remoteStreamAdded", function (e) {
+            _this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
+                width: "300px",
+                height: "225px"
+            }, false);
+        });
+        apiRTC.addEventListener("webRTCClientCreated", function (e) {
+            console.log("webRTC Client Created");
+            _this.webRTCClient.setAllowMultipleCalls(true);
+            _this.webRTCClient.setVideoBandwidth(300);
+            _this.webRTCClient.setUserAcceptOnIncomingCall(true);
+            /*      this.InitializeControls();
+                  this.AddEventListeners();*/
+            //this.MakeCall("729278");
+        });
+    };
+    CozePage.prototype.MakeCall = function (calleeId) {
+        var callId = this.webRTCClient.call(calleeId);
+        if (callId != null) {
+            this.incomingCallId = callId;
+            this.showHangup = true;
+        }
+    };
+    CozePage.prototype.HangUp = function () {
+        this.webRTCClient.hangUp(this.incomingCallId);
+    };
+    CozePage.prototype.AnswerCall = function (incomingCallId) {
+        this.webRTCClient.acceptCall(incomingCallId);
+        this.nativeAudio.stop('uniqueI1').then(function () { }, function () { });
+        this.UpdateControlsOnAnswer();
+    };
+    CozePage.prototype.RejectCall = function (incomingCallId) {
+        this.webRTCClient.refuseCall(incomingCallId);
+        this.UpdateControlsOnReject();
+        this.RemoveMediaElements(incomingCallId);
+    };
+    CozePage.prototype.StartCozeTimer = function () {
+        var _this = this;
+        this.cozeTimer = setTimeout(function (x) {
+            if (_this.timeToCoze <= 0) { }
+            _this.timeToCoze -= 1;
+            if (_this.timeToCoze > 0) {
+                _this.readyForCoze = false;
+                _this.StartCozeTimer();
             }
             else {
-                _this.hidevalue = true;
+                _this.readyForCoze = true;
+            }
+        }, 1000);
+    };
+    CozePage.prototype.StartCallTimer = function () {
+        var _this = this;
+        this.callTimer = setTimeout(function (x) {
+            if (_this.callTimeLeft <= 0) { }
+            _this.callTimeLeft -= 1;
+            if (_this.callTimeLeft > 0) {
+                _this.HangUp();
+                // TODO: This needs to be reset to the countdown until the next Coze
+                _this.timeToCoze = 5;
             }
         }, 1000);
     };
     CozePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h1 class="countdown-timer" *ngIf="!this.hidevalue">\n    {{this.maxTime}}\n  </h1>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/coze/coze.html"*/
+            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.readyForCoze">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Time to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCoze}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.readyForCoze">\n        <ion-item>\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.readyForCoze">\n        <ion-row>\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <p>Remote Stream</p>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <p>My Stream</p>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__["a" /* NativeAudio */]])
     ], CozePage);
     return CozePage;
 }());
@@ -84,13 +434,13 @@ var CozePage = (function () {
 
 /***/ }),
 
-/***/ 196:
+/***/ 246:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FriendsPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -108,7 +458,7 @@ var FriendsPage = (function () {
     }
     FriendsPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-friends',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/friends/friends.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Friends\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Allison A. from NYU\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Barry B. from Columbia\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Cathy C. from Cornell Tech\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Donny D. from The New School\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Eric E. from CUNY\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/friends/friends.html"*/
+            selector: 'page-friends',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Friends\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Allison A. from NYU\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Barry B. from Columbia\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Cathy C. from Cornell Tech\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Donny D. from The New School\n    </ion-item>\n    <ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Eric E. from CUNY\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
     ], FriendsPage);
@@ -119,13 +469,13 @@ var FriendsPage = (function () {
 
 /***/ }),
 
-/***/ 197:
+/***/ 247:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SettingsPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -143,7 +493,7 @@ var SettingsPage = (function () {
     }
     SettingsPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-settings',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/settings/settings.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>Settings</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h2>Profile</h2>\n  <h2>Prerefences</h2>\n  <h2>Report a Bug</h2>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/settings/settings.html"*/
+            selector: 'page-settings',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>Settings</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h2>Profile</h2>\n  <h2>Prerefences</h2>\n  <h2>Report a Bug</h2>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
     ], SettingsPage);
@@ -154,13 +504,13 @@ var SettingsPage = (function () {
 
 /***/ }),
 
-/***/ 198:
+/***/ 284:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(199);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(222);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(285);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(304);
 
 
 Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_1__app_module__["a" /* AppModule */]);
@@ -168,23 +518,28 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 
 /***/ }),
 
-/***/ 222:
+/***/ 304:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__(265);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_coze_coze__ = __webpack_require__(195);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__ = __webpack_require__(196);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__ = __webpack_require__(197);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__ = __webpack_require__(275);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_home_home__ = __webpack_require__(274);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ionic_native_status_bar__ = __webpack_require__(191);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_native_splash_screen__ = __webpack_require__(193);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_native_audio__ = __webpack_require__(194);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__(345);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_coze_coze__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__ = __webpack_require__(246);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__ = __webpack_require__(247);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__ = __webpack_require__(244);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_login_login__ = __webpack_require__(230);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_home_home__ = __webpack_require__(381);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__ = __webpack_require__(227);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__ = __webpack_require__(229);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__ionic_native_native_audio__ = __webpack_require__(125);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_angularfire2__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angularfire2_auth__ = __webpack_require__(231);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_database__ = __webpack_require__(382);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__firebase_credentials__ = __webpack_require__(443);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -199,7 +554,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
 // Temporary until we get video chat working
+
+
+
+
 
 
 
@@ -215,13 +575,17 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__["a" /* FriendsPage */],
                 __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__["a" /* SettingsPage */],
                 __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__["a" /* TabsPage */],
-                __WEBPACK_IMPORTED_MODULE_8__pages_home_home__["a" /* HomePage */]
+                __WEBPACK_IMPORTED_MODULE_8__pages_login_login__["a" /* LoginPage */],
+                __WEBPACK_IMPORTED_MODULE_9__pages_home_home__["a" /* HomePage */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__["a" /* BrowserModule */],
                 __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["c" /* IonicModule */].forRoot(__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* MyApp */], {}, {
                     links: []
-                })
+                }),
+                __WEBPACK_IMPORTED_MODULE_13_angularfire2__["a" /* AngularFireModule */].initializeApp(__WEBPACK_IMPORTED_MODULE_16__firebase_credentials__["a" /* FIREBASE_CREDENTIALS */]),
+                __WEBPACK_IMPORTED_MODULE_14_angularfire2_auth__["b" /* AngularFireAuthModule */],
+                __WEBPACK_IMPORTED_MODULE_15_angularfire2_database__["a" /* AngularFireDatabaseModule */]
             ],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_2_ionic_angular__["a" /* IonicApp */]],
             entryComponents: [
@@ -230,12 +594,13 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__["a" /* FriendsPage */],
                 __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__["a" /* SettingsPage */],
                 __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__["a" /* TabsPage */],
-                __WEBPACK_IMPORTED_MODULE_8__pages_home_home__["a" /* HomePage */]
+                __WEBPACK_IMPORTED_MODULE_8__pages_login_login__["a" /* LoginPage */],
+                __WEBPACK_IMPORTED_MODULE_9__pages_home_home__["a" /* HomePage */]
             ],
             providers: [
-                __WEBPACK_IMPORTED_MODULE_11__ionic_native_native_audio__["a" /* NativeAudio */],
-                __WEBPACK_IMPORTED_MODULE_9__ionic_native_status_bar__["a" /* StatusBar */],
-                __WEBPACK_IMPORTED_MODULE_10__ionic_native_splash_screen__["a" /* SplashScreen */],
+                __WEBPACK_IMPORTED_MODULE_12__ionic_native_native_audio__["a" /* NativeAudio */],
+                __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__["a" /* StatusBar */],
+                __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__["a" /* SplashScreen */],
                 { provide: __WEBPACK_IMPORTED_MODULE_0__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* IonicErrorHandler */] }
             ]
         })
@@ -247,16 +612,16 @@ var AppModule = (function () {
 
 /***/ }),
 
-/***/ 265:
+/***/ 345:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(191);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(193);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(274);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(227);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(229);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_login_login__ = __webpack_require__(230);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -270,12 +635,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-// This is temporary so we can port over the WebRTC funcitonality to our Coze page
+// import { TabsPage } from '../pages/tabs/tabs';
 
+// This is temporary so we can port over the WebRTC funcitonality to our Coze page
+// import { HomePage } from '../pages/home/home';
 var MyApp = (function () {
+    // Uncomment this to make the home page the test WebRTC page
+    //rootPage:any = HomePage;
     function MyApp(platform, statusBar, splashScreen) {
-        //rootPage:any = TabsPage;
-        this.rootPage = __WEBPACK_IMPORTED_MODULE_4__pages_home_home__["a" /* HomePage */];
+        this.rootPage = __WEBPACK_IMPORTED_MODULE_4__pages_login_login__["a" /* LoginPage */];
         platform.ready().then(function () {
             // Okay, so the platform is ready and our plugins are available.
             // Here you can do any higher level native things you might need.
@@ -284,9 +652,9 @@ var MyApp = (function () {
         });
     }
     MyApp = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/app/app.html"*/
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/app/app.html"*/'<ion-nav [root]="rootPage"></ion-nav>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/app/app.html"*/
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["e" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* Platform */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__["a" /* StatusBar */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__["a" /* SplashScreen */]])
     ], MyApp);
     return MyApp;
 }());
@@ -295,14 +663,14 @@ var MyApp = (function () {
 
 /***/ }),
 
-/***/ 274:
+/***/ 381:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HomePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(194);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(125);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -474,7 +842,7 @@ var HomePage = (function () {
     };
     HomePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-home',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/home/home.html"*/'<ion-header>\n    <ion-navbar color="dark">\n        <ion-title>\n            Call Demo - {{myCallId}}\n        </ion-title>\n    </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list>\n        <ion-item>\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <p>Remote Stream</p>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <p>My Stream</p>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/home/home.html"*/
+            selector: 'page-home',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/home/home.html"*/'<ion-header>\n    <ion-navbar color="dark">\n        <ion-title>\n            Call Demo - {{myCallId}}\n        </ion-title>\n    </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list>\n        <ion-item>\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row>\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <p>Remote Stream</p>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <p>My Stream</p>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/home/home.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__["a" /* NativeAudio */]])
     ], HomePage);
@@ -485,45 +853,22 @@ var HomePage = (function () {
 
 /***/ }),
 
-/***/ 275:
+/***/ 443:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TabsPage; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__coze_coze__ = __webpack_require__(195);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__friends_friends__ = __webpack_require__(196);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__settings_settings__ = __webpack_require__(197);
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FIREBASE_CREDENTIALS; });
+var FIREBASE_CREDENTIALS = {
+    apiKey: "AIzaSyA-ghCvFKtmWslyfdv7tfijtgfrSTkV_ZA",
+    authDomain: "cozeserver.firebaseapp.com",
+    databaseURL: "https://cozeserver.firebaseio.com",
+    projectId: "cozeserver",
+    storageBucket: "",
+    messagingSenderId: "1048041411921"
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-
-
-
-var TabsPage = (function () {
-    function TabsPage() {
-        this.tab1Root = __WEBPACK_IMPORTED_MODULE_1__coze_coze__["a" /* CozePage */];
-        this.tab2Root = __WEBPACK_IMPORTED_MODULE_2__friends_friends__["a" /* FriendsPage */];
-        this.tab3Root = __WEBPACK_IMPORTED_MODULE_3__settings_settings__["a" /* SettingsPage */];
-    }
-    TabsPage = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/tabs/tabs.html"*/'<ion-tabs>\n  <ion-tab [root]="tab1Root" tabIcon="md-bonfire"></ion-tab>\n  <ion-tab [root]="tab2Root" tabIcon="md-contacts"></ion-tab>\n  <ion-tab [root]="tab3Root" tabIcon="md-settings"></ion-tab>\n</ion-tabs>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeV1/src/pages/tabs/tabs.html"*/
-        }),
-        __metadata("design:paramtypes", [])
-    ], TabsPage);
-    return TabsPage;
-}());
-
-//# sourceMappingURL=tabs.js.map
+//# sourceMappingURL=firebase.credentials.js.map
 
 /***/ })
 
-},[198]);
+},[284]);
 //# sourceMappingURL=main.js.map
