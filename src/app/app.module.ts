@@ -21,6 +21,10 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 
+import { HTTP } from '@ionic-native/http'
+
+import { Diagnostic } from '@ionic-native/diagnostic';
+
 import { FIREBASE_CREDENTIALS } from './firebase.credentials';
 
 @NgModule({
@@ -54,6 +58,8 @@ import { FIREBASE_CREDENTIALS } from './firebase.credentials';
     NativeAudio,
     StatusBar,
     SplashScreen,
+    HTTP,
+    Diagnostic,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

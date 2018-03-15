@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, Platform } from 'ionic-angular';
 import { NativeAudio } from '@ionic-native/native-audio';
+import { HTTP } from '@ionic-native/http';
+import { Diagnostic } from '@ionic-native/diagnostic';
+
 
 declare var apiRTC: any
 
@@ -14,7 +17,9 @@ export class CozePage {
   cozeTimer: number;
   // TODO: This needs to be set to the countdown until the next Coze
   timeToCoze: any=5;
-  readyForCoze: boolean;
+  gotNextCozeTime: boolean = false;
+  readyForCoze: boolean = false;
+  startCoze: boolean = false;
   callTimer: number;
   callTimeLeft: any=30;
 
@@ -24,8 +29,13 @@ export class CozePage {
   showAnswer: boolean;
   showReject: boolean;
   showStatus: boolean;
+  showControls: boolean = false;
   showRemoteVideo: boolean = true;
   showMyVideo: boolean = true;
+  screenWidth: number;
+  screenHeight: number;
+  debugmsg: string;
+  partner_id: number = -1;
 
   session;
   webRTCClient;
@@ -34,15 +44,30 @@ export class CozePage {
   status;
   calleeId;
 
-  constructor(public navCtrl: NavController,private nativeAudio: NativeAudio) {
-    this.InitializeApiRTC();
-    this.nativeAudio.preloadComplex('uniqueI1', 'assets/tone.mp3', 1, 1, 0).then((succ)=>{
-      console.log("suu",succ)
-    }, (err)=>{
-      console.log("err",err)
-    });
+  constructor(public navCtrl: NavController, private nativeAudio: NativeAudio,
+      private platform: Platform, private http: HTTP,
+      private diagnostic: Diagnostic) {
+      //this.GetCameraPermission();
+      //this.GetRecordAudioPermission();
 
-    this.StartCozeTimer();
+    platform.ready().then((readySource) => {
+
+      this.InitializeApiRTC();
+
+      this.nativeAudio.preloadComplex('uniqueI1', 'assets/tone.mp3', 1, 1, 0).then((succ)=>{
+        console.log("suu",succ)
+      }, (err)=>{
+        console.log("err",err)
+      });
+
+      this.screenWidth = platform.width();
+      this.screenHeight = platform.height();
+
+      this.GetNextCozeTime();
+      // console.log(nextCozeTime)
+
+      this.StartCozeTimer();
+    });
   }
 
   InitializeApiRTC() {
@@ -159,7 +184,8 @@ export class CozePage {
     });
 
     apiRTC.addEventListener("incomingCall", (e) => {
-      // this.InitializeControlsForIncomingCall();
+      console.log("incomingCall")
+      //this.InitializeControlsForIncomingCall();
       this.incomingCallId = e.detail.callId;
       this.AnswerCall(this.incomingCallId);
       this.StartCallTimer();
@@ -174,9 +200,13 @@ export class CozePage {
     });
 
     apiRTC.addEventListener("remoteStreamAdded", (e) => {
+      //var w = Math.min(this.screenWidth, this.screenHeight);
+      //console.log(w);
       this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
         width: "300px",
         height: "225px"
+        //width: Math.floor(w*0.5),
+        //height: Math.floor(w*0.5)
       }, false);
     });
 
@@ -195,6 +225,7 @@ export class CozePage {
   }
 
   MakeCall(calleeId) {
+    console.log("MakeCall");
     var callId = this.webRTCClient.call(calleeId);
     if (callId != null) {
       this.incomingCallId = callId;
@@ -207,6 +238,7 @@ export class CozePage {
   }
 
   AnswerCall(incomingCallId) {
+    console.log("AnswerCall");
     this.webRTCClient.acceptCall(incomingCallId);
     this.nativeAudio.stop('uniqueI1').then(()=>{},()=>{});
 
@@ -220,24 +252,25 @@ export class CozePage {
   }
 
   StartCozeTimer(){
-      this.cozeTimer = setTimeout(x =>
-        {
-            if (this.timeToCoze <= 0) { }
-            this.timeToCoze -= 1;
+    this.cozeTimer = setTimeout(x =>
+      {
+        if (this.timeToCoze <= 0) { }
+        this.timeToCoze -= 1;
 
-            if (this.timeToCoze > 0) {
-              this.readyForCoze = false;
-              this.StartCozeTimer();
-            }
+        if (this.timeToCoze  < 3 && !this.readyForCoze) {
+            this.readyForCoze = true;
+            this.ReadyForCoze()
+        }
 
-            else {
-                this.readyForCoze = true;
-            }
+        if (this.timeToCoze > 0) {
+          this.StartCozeTimer();
+        } else {
+          this.startCoze = true;
+          this.GetMatch();
+        }
 
-        }, 1000);
-
-
-    }
+      }, 1000);
+  }
 
   StartCallTimer(){
     this.callTimer = setTimeout(x =>
@@ -253,4 +286,89 @@ export class CozePage {
     }, 1000);
   }
 
+  GetNextCozeTime() {
+    var url = 'http://middleware.ddns.net:5000/get_next_coze_time';
+    this.http.get(url, {}, {}).then(data => {
+      var nextCozeTime = JSON.parse(data.data)["next_coze_time"]
+      var timeNow = +new Date();
+      this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
+      console.log(nextCozeTime)
+      console.log(new Date(nextCozeTime))
+      console.log(this.timeToCoze)
+      //this.StartCozeTimer()
+      this.gotNextCozeTime = true
+      this.debugmsg = data.data
+    });
+  }
+
+  ReadyForCoze() {
+    var url = 'http://middleware.ddns.net:5000/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
+    this.http.get(url, {}, {}).then(data => {
+      console.log("Signaled 'Ready for Coze'")
+    });
+  }
+
+  GetMatch() {
+    var attempt = 0
+    var _partner_id = -1
+    var url = 'http://middleware.ddns.net:5000/get_match?webrtc_id=' + encodeURI(this.myCallId);
+    var $this = this;
+    var getMatchIntervalID = setInterval(function () {
+      console.log("Attempt " + (attempt+1) + " at GetMatch()");
+      $this.http.get(url, {}, {}).then(data => {
+        _partner_id = parseInt(JSON.parse(data.data)["partner_id"]);
+        console.log(_partner_id);
+        if (_partner_id == -1) {
+          console.log("Didn't find a match - trying again");
+          attempt += 1;
+          if (attempt >= 3) {
+            console.log("Tried " + attempt + " times, quitting");
+            window.clearInterval(getMatchIntervalID);
+          }
+        } else {
+          console.log("Found a match: " + _partner_id);
+          //this.partner_id = _partner_id;
+          window.clearInterval(getMatchIntervalID);
+          $this.MakeCall(_partner_id);
+        }
+        console.log("End of GetMatch attempt");
+      })
+    }, 3000);
+  }
+
+  GetCameraPermission() {
+    this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.CAMERA).then((status) => {
+      console.log(`AuthorizationStatus`);
+      console.log(status);
+      if (status != this.diagnostic.permissionStatus.GRANTED) {
+        this.diagnostic.requestRuntimePermission(this.diagnostic.permission.CAMERA).then((data) => {
+          console.log(`getCameraAuthorizationStatus`);
+          console.log(data);
+        })
+      } else {
+        console.log("We have the CAMERA permission");
+      }
+    }, (statusError) => {
+      console.log(`statusError`);
+      console.log(statusError);
+    });
+  }
+
+  GetRecordAudioPermission() {
+    this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.RECORD_AUDIO).then((status) => {
+      console.log(`AuthorizationStatus`);
+      console.log(status);
+      if (status != this.diagnostic.permissionStatus.GRANTED) {
+        this.diagnostic.requestRuntimePermission(this.diagnostic.permission.RECORD_AUDIO).then((data) => {
+          console.log(`getRecordAudioAuthorizationStatus`);
+          console.log(data);
+        })
+      } else {
+        console.log("We have the RECORD_AUDIO permission");
+      }
+    }, (statusError) => {
+      console.log(`statusError`);
+      console.log(statusError);
+    });
+  }
 }
