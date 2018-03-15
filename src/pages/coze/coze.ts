@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 import { NativeAudio } from '@ionic-native/native-audio';
 import { HTTP } from '@ionic-native/http';
-import { Diagnostic } from '@ionic-native/diagnostic';
+import { AndroidPermissions } from '@ionic-native/android-permissions';
 
 
 declare var apiRTC: any
@@ -21,7 +21,8 @@ export class CozePage {
   readyForCoze: boolean = false;
   startCoze: boolean = false;
   callTimer: number;
-  callTimeLeft: any=30;
+  callTimeLeft: any=0;
+  callDuration: any=30;
 
   // Vars for RTC
   showCall: boolean;
@@ -35,7 +36,7 @@ export class CozePage {
   screenWidth: number;
   screenHeight: number;
   debugmsg: string;
-  partner_id: number = -1;
+  partnerId: number = -1;
 
   session;
   webRTCClient;
@@ -46,11 +47,12 @@ export class CozePage {
 
   constructor(public navCtrl: NavController, private nativeAudio: NativeAudio,
       private platform: Platform, private http: HTTP,
-      private diagnostic: Diagnostic) {
-      //this.GetCameraPermission();
-      //this.GetRecordAudioPermission();
+      private androidPermissions: AndroidPermissions
+    ) {
 
     platform.ready().then((readySource) => {
+
+      this.GetPermissions();
 
       this.InitializeApiRTC();
 
@@ -66,7 +68,7 @@ export class CozePage {
       this.GetNextCozeTime();
       // console.log(nextCozeTime)
 
-      this.StartCozeTimer();
+      //this.StartCozeTimer();
     });
   }
 
@@ -74,6 +76,7 @@ export class CozePage {
     //apiRTC initialization
     apiRTC.init({
       apiKey: "819abef1fde1c833e0601ec6dd4a8226",
+      //apiKey: "a4de60319a9495a413a6d4a3b2871f88",
       // apiCCId : "2",
       onReady: (e) => {
         this.sessionReadyHandler(e);
@@ -185,10 +188,9 @@ export class CozePage {
 
     apiRTC.addEventListener("incomingCall", (e) => {
       console.log("incomingCall")
-      //this.InitializeControlsForIncomingCall();
+      this.InitializeControlsForIncomingCall();
       this.incomingCallId = e.detail.callId;
       this.AnswerCall(this.incomingCallId);
-      this.StartCallTimer();
     });
 
     apiRTC.addEventListener("hangup", (e) => {
@@ -200,6 +202,8 @@ export class CozePage {
     });
 
     apiRTC.addEventListener("remoteStreamAdded", (e) => {
+      this.callTimeLeft = this.callDuration;
+      this.StartCallTimer();
       //var w = Math.min(this.screenWidth, this.screenHeight);
       //console.log(w);
       this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
@@ -234,6 +238,10 @@ export class CozePage {
   }
 
   HangUp() {
+    this.startCoze = false;
+    this.readyForCoze = false;
+    this.gotNextCozeTime = false;
+    this.GetNextCozeTime();
     this.webRTCClient.hangUp(this.incomingCallId);
   }
 
@@ -254,7 +262,6 @@ export class CozePage {
   StartCozeTimer(){
     this.cozeTimer = setTimeout(x =>
       {
-        if (this.timeToCoze <= 0) { }
         this.timeToCoze -= 1;
 
         if (this.timeToCoze  < 3 && !this.readyForCoze) {
@@ -279,26 +286,33 @@ export class CozePage {
       this.callTimeLeft -= 1;
 
       if (this.callTimeLeft > 0) {
+        this.StartCallTimer();
+      } else {
         this.HangUp();
-        // TODO: This needs to be reset to the countdown until the next Coze
-        this.timeToCoze = 5
       }
     }, 1000);
   }
 
   GetNextCozeTime() {
     var url = 'http://middleware.ddns.net:5000/get_next_coze_time';
-    this.http.get(url, {}, {}).then(data => {
-      var nextCozeTime = JSON.parse(data.data)["next_coze_time"]
-      var timeNow = +new Date();
-      this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
-      console.log(nextCozeTime)
-      console.log(new Date(nextCozeTime))
-      console.log(this.timeToCoze)
-      //this.StartCozeTimer()
-      this.gotNextCozeTime = true
-      this.debugmsg = data.data
-    });
+    var $this = this;
+    var getNextCozeTimeIntervalID = setInterval(function () {
+      console.log("Trying to get next Coze time...");
+      $this.http.get(url, {}, {}).then(data => {
+        var cozeState = JSON.parse(data.data)["coze_state"];
+        if (cozeState == "waiting") {
+          window.clearInterval(getNextCozeTimeIntervalID);
+          var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
+          var timeNow = +new Date();
+          $this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
+          console.log(nextCozeTime);
+          console.log(new Date(nextCozeTime));
+          console.log($this.timeToCoze);
+          $this.gotNextCozeTime = true;
+          $this.StartCozeTimer();
+        }
+      });
+    }, 3000);
   }
 
   ReadyForCoze() {
@@ -310,15 +324,15 @@ export class CozePage {
 
   GetMatch() {
     var attempt = 0
-    var _partner_id = -1
+    var _partnerId = -1
     var url = 'http://middleware.ddns.net:5000/get_match?webrtc_id=' + encodeURI(this.myCallId);
     var $this = this;
     var getMatchIntervalID = setInterval(function () {
       console.log("Attempt " + (attempt+1) + " at GetMatch()");
       $this.http.get(url, {}, {}).then(data => {
-        _partner_id = parseInt(JSON.parse(data.data)["partner_id"]);
-        console.log(_partner_id);
-        if (_partner_id == -1) {
+        _partnerId = parseInt(JSON.parse(data.data)["partner_id"]);
+        console.log(_partnerId);
+        if (_partnerId == -1) {
           console.log("Didn't find a match - trying again");
           attempt += 1;
           if (attempt >= 3) {
@@ -326,49 +340,27 @@ export class CozePage {
             window.clearInterval(getMatchIntervalID);
           }
         } else {
-          console.log("Found a match: " + _partner_id);
-          //this.partner_id = _partner_id;
+          console.log("Found a match: " + _partnerId);
+          //this.partnerId = _partnerId;
           window.clearInterval(getMatchIntervalID);
-          $this.MakeCall(_partner_id);
+          $this.MakeCall(_partnerId);
         }
         console.log("End of GetMatch attempt");
       })
     }, 3000);
   }
 
-  GetCameraPermission() {
-    this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.CAMERA).then((status) => {
-      console.log(`AuthorizationStatus`);
-      console.log(status);
-      if (status != this.diagnostic.permissionStatus.GRANTED) {
-        this.diagnostic.requestRuntimePermission(this.diagnostic.permission.CAMERA).then((data) => {
-          console.log(`getCameraAuthorizationStatus`);
-          console.log(data);
-        })
-      } else {
-        console.log("We have the CAMERA permission");
-      }
-    }, (statusError) => {
-      console.log(`statusError`);
-      console.log(statusError);
-    });
-  }
+  GetPermissions() {
+    /*this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.CAMERA).then(
+      result => console.log('Has permission?',result.hasPermission),
+      err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.CAMERA)
+    );
 
-  GetRecordAudioPermission() {
-    this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.RECORD_AUDIO).then((status) => {
-      console.log(`AuthorizationStatus`);
-      console.log(status);
-      if (status != this.diagnostic.permissionStatus.GRANTED) {
-        this.diagnostic.requestRuntimePermission(this.diagnostic.permission.RECORD_AUDIO).then((data) => {
-          console.log(`getRecordAudioAuthorizationStatus`);
-          console.log(data);
-        })
-      } else {
-        console.log("We have the RECORD_AUDIO permission");
-      }
-    }, (statusError) => {
-      console.log(`statusError`);
-      console.log(statusError);
-    });
+    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO).then(
+      result => console.log('Has permission?',result.hasPermission),
+      err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO)
+    );*/
+
+    this.androidPermissions.requestPermissions([this.androidPermissions.PERMISSION.CAMERA, this.androidPermissions.PERMISSION.RECORD_AUDIO]);
   }
 }

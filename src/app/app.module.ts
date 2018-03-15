@@ -23,7 +23,7 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 
 import { HTTP } from '@ionic-native/http'
 
-import { Diagnostic } from '@ionic-native/diagnostic';
+import { AndroidPermissions } from '@ionic-native/android-permissions';
 
 import { FIREBASE_CREDENTIALS } from './firebase.credentials';
 
@@ -59,7 +59,7 @@ import { FIREBASE_CREDENTIALS } from './firebase.credentials';
     StatusBar,
     SplashScreen,
     HTTP,
-    Diagnostic,
+    AndroidPermissions,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

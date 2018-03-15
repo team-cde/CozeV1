@@ -84,7 +84,7 @@ webpackEmptyAsyncContext.id = 188;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(125);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__ = __webpack_require__(232);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_diagnostic__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__ = __webpack_require__(233);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -100,27 +100,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var CozePage = (function () {
-    function CozePage(navCtrl, nativeAudio, platform, http, diagnostic) {
-        //this.GetCameraPermission();
-        //this.GetRecordAudioPermission();
+    function CozePage(navCtrl, nativeAudio, platform, http, androidPermissions) {
         var _this = this;
         this.navCtrl = navCtrl;
         this.nativeAudio = nativeAudio;
         this.platform = platform;
         this.http = http;
-        this.diagnostic = diagnostic;
+        this.androidPermissions = androidPermissions;
         // TODO: This needs to be set to the countdown until the next Coze
         this.timeToCoze = 5;
         this.gotNextCozeTime = false;
         this.readyForCoze = false;
         this.startCoze = false;
-        this.callTimeLeft = 30;
+        this.callTimeLeft = 0;
+        this.callDuration = 30;
         this.showControls = false;
         this.showRemoteVideo = true;
         this.showMyVideo = true;
-        this.partner_id = -1;
+        this.partnerId = -1;
         this.incomingCallId = 0;
         platform.ready().then(function (readySource) {
+            _this.GetPermissions();
             _this.InitializeApiRTC();
             _this.nativeAudio.preloadComplex('uniqueI1', 'assets/tone.mp3', 1, 1, 0).then(function (succ) {
                 console.log("suu", succ);
@@ -131,7 +131,7 @@ var CozePage = (function () {
             _this.screenHeight = platform.height();
             _this.GetNextCozeTime();
             // console.log(nextCozeTime)
-            _this.StartCozeTimer();
+            //this.StartCozeTimer();
         });
     }
     CozePage.prototype.InitializeApiRTC = function () {
@@ -139,6 +139,7 @@ var CozePage = (function () {
         //apiRTC initialization
         apiRTC.init({
             apiKey: "819abef1fde1c833e0601ec6dd4a8226",
+            //apiKey: "a4de60319a9495a413a6d4a3b2871f88",
             // apiCCId : "2",
             onReady: function (e) {
                 _this.sessionReadyHandler(e);
@@ -232,10 +233,9 @@ var CozePage = (function () {
         });
         apiRTC.addEventListener("incomingCall", function (e) {
             console.log("incomingCall");
-            //this.InitializeControlsForIncomingCall();
+            _this.InitializeControlsForIncomingCall();
             _this.incomingCallId = e.detail.callId;
             _this.AnswerCall(_this.incomingCallId);
-            _this.StartCallTimer();
         });
         apiRTC.addEventListener("hangup", function (e) {
             if (e.detail.lastEstablishedCall === true) {
@@ -245,6 +245,8 @@ var CozePage = (function () {
             _this.RemoveMediaElements(e.detail.callId);
         });
         apiRTC.addEventListener("remoteStreamAdded", function (e) {
+            _this.callTimeLeft = _this.callDuration;
+            _this.StartCallTimer();
             //var w = Math.min(this.screenWidth, this.screenHeight);
             //console.log(w);
             _this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
@@ -273,6 +275,11 @@ var CozePage = (function () {
         }
     };
     CozePage.prototype.HangUp = function () {
+        // TODO: This won't work properly until the server has reset the time for next coze
+        this.startCoze = false;
+        this.readyForCoze = false;
+        this.gotNextCozeTime = false;
+        this.GetNextCozeTime();
         this.webRTCClient.hangUp(this.incomingCallId);
     };
     CozePage.prototype.AnswerCall = function (incomingCallId) {
@@ -289,7 +296,6 @@ var CozePage = (function () {
     CozePage.prototype.StartCozeTimer = function () {
         var _this = this;
         this.cozeTimer = setTimeout(function (x) {
-            if (_this.timeToCoze <= 0) { }
             _this.timeToCoze -= 1;
             if (_this.timeToCoze < 3 && !_this.readyForCoze) {
                 _this.readyForCoze = true;
@@ -310,26 +316,33 @@ var CozePage = (function () {
             if (_this.callTimeLeft <= 0) { }
             _this.callTimeLeft -= 1;
             if (_this.callTimeLeft > 0) {
+                _this.StartCallTimer();
+            }
+            else {
                 _this.HangUp();
-                // TODO: This needs to be reset to the countdown until the next Coze
-                _this.timeToCoze = 5;
             }
         }, 1000);
     };
     CozePage.prototype.GetNextCozeTime = function () {
-        var _this = this;
         var url = 'http://middleware.ddns.net:5000/get_next_coze_time';
-        this.http.get(url, {}, {}).then(function (data) {
-            var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
-            var timeNow = +new Date();
-            _this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
-            console.log(nextCozeTime);
-            console.log(new Date(nextCozeTime));
-            console.log(_this.timeToCoze);
-            //this.StartCozeTimer()
-            _this.gotNextCozeTime = true;
-            _this.debugmsg = data.data;
-        });
+        var $this = this;
+        var getNextCozeTimeIntervalID = setInterval(function () {
+            console.log("Trying to get next Coze time...");
+            $this.http.get(url, {}, {}).then(function (data) {
+                var cozeState = JSON.parse(data.data)["coze_state"];
+                if (cozeState == "waiting") {
+                    window.clearInterval(getNextCozeTimeIntervalID);
+                    var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
+                    var timeNow = +new Date();
+                    $this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
+                    console.log(nextCozeTime);
+                    console.log(new Date(nextCozeTime));
+                    console.log($this.timeToCoze);
+                    $this.gotNextCozeTime = true;
+                    $this.StartCozeTimer();
+                }
+            });
+        }, 3000);
     };
     CozePage.prototype.ReadyForCoze = function () {
         var url = 'http://middleware.ddns.net:5000/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
@@ -339,15 +352,15 @@ var CozePage = (function () {
     };
     CozePage.prototype.GetMatch = function () {
         var attempt = 0;
-        var _partner_id = -1;
+        var _partnerId = -1;
         var url = 'http://middleware.ddns.net:5000/get_match?webrtc_id=' + encodeURI(this.myCallId);
         var $this = this;
         var getMatchIntervalID = setInterval(function () {
             console.log("Attempt " + (attempt + 1) + " at GetMatch()");
             $this.http.get(url, {}, {}).then(function (data) {
-                _partner_id = parseInt(JSON.parse(data.data)["partner_id"]);
-                console.log(_partner_id);
-                if (_partner_id == -1) {
+                _partnerId = parseInt(JSON.parse(data.data)["partner_id"]);
+                console.log(_partnerId);
+                if (_partnerId == -1) {
                     console.log("Didn't find a match - trying again");
                     attempt += 1;
                     if (attempt >= 3) {
@@ -356,60 +369,34 @@ var CozePage = (function () {
                     }
                 }
                 else {
-                    console.log("Found a match: " + _partner_id);
-                    //this.partner_id = _partner_id;
+                    console.log("Found a match: " + _partnerId);
+                    //this.partnerId = _partnerId;
                     window.clearInterval(getMatchIntervalID);
-                    $this.MakeCall(_partner_id);
+                    $this.MakeCall(_partnerId);
                 }
                 console.log("End of GetMatch attempt");
             });
         }, 3000);
     };
-    CozePage.prototype.GetCameraPermission = function () {
-        var _this = this;
-        this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.CAMERA).then(function (status) {
-            console.log("AuthorizationStatus");
-            console.log(status);
-            if (status != _this.diagnostic.permissionStatus.GRANTED) {
-                _this.diagnostic.requestRuntimePermission(_this.diagnostic.permission.CAMERA).then(function (data) {
-                    console.log("getCameraAuthorizationStatus");
-                    console.log(data);
-                });
-            }
-            else {
-                console.log("We have the CAMERA permission");
-            }
-        }, function (statusError) {
-            console.log("statusError");
-            console.log(statusError);
-        });
-    };
-    CozePage.prototype.GetRecordAudioPermission = function () {
-        var _this = this;
-        this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.RECORD_AUDIO).then(function (status) {
-            console.log("AuthorizationStatus");
-            console.log(status);
-            if (status != _this.diagnostic.permissionStatus.GRANTED) {
-                _this.diagnostic.requestRuntimePermission(_this.diagnostic.permission.RECORD_AUDIO).then(function (data) {
-                    console.log("getRecordAudioAuthorizationStatus");
-                    console.log(data);
-                });
-            }
-            else {
-                console.log("We have the RECORD_AUDIO permission");
-            }
-        }, function (statusError) {
-            console.log("statusError");
-            console.log(statusError);
-        });
+    CozePage.prototype.GetPermissions = function () {
+        /*this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.CAMERA).then(
+          result => console.log('Has permission?',result.hasPermission),
+          err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.CAMERA)
+        );
+    
+        this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO).then(
+          result => console.log('Has permission?',result.hasPermission),
+          err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO)
+        );*/
+        this.androidPermissions.requestPermissions([this.androidPermissions.PERMISSION.CAMERA, this.androidPermissions.PERMISSION.RECORD_AUDIO]);
     };
     CozePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCoze}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.startCoze">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <p>Remote Stream</p>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <p>My Stream</p>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
+            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCoze}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.startCoze">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__["a" /* NativeAudio */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* Platform */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__["a" /* HTTP */],
-            __WEBPACK_IMPORTED_MODULE_4__ionic_native_diagnostic__["a" /* Diagnostic */]])
+            __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__["a" /* AndroidPermissions */]])
     ], CozePage);
     return CozePage;
 }());
@@ -524,7 +511,7 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angularfire2_auth__ = __webpack_require__(236);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_database__ = __webpack_require__(384);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__ionic_native_http__ = __webpack_require__(232);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ionic_native_diagnostic__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ionic_native_android_permissions__ = __webpack_require__(233);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__firebase_credentials__ = __webpack_require__(445);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -590,7 +577,7 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_10__ionic_native_status_bar__["a" /* StatusBar */],
                 __WEBPACK_IMPORTED_MODULE_11__ionic_native_splash_screen__["a" /* SplashScreen */],
                 __WEBPACK_IMPORTED_MODULE_16__ionic_native_http__["a" /* HTTP */],
-                __WEBPACK_IMPORTED_MODULE_17__ionic_native_diagnostic__["a" /* Diagnostic */],
+                __WEBPACK_IMPORTED_MODULE_17__ionic_native_android_permissions__["a" /* AndroidPermissions */],
                 { provide: __WEBPACK_IMPORTED_MODULE_0__angular_core__["u" /* ErrorHandler */], useClass: __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* IonicErrorHandler */] }
             ]
         })
