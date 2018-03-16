@@ -114,6 +114,7 @@ var CozePage = (function () {
         this.startCoze = false;
         this.callTimeLeft = 0;
         this.callDuration = 30;
+        this.timeToCozeStr = "-:-:-";
         this.showControls = false;
         this.showRemoteVideo = true;
         this.showMyVideo = true;
@@ -275,7 +276,6 @@ var CozePage = (function () {
         }
     };
     CozePage.prototype.HangUp = function () {
-        // TODO: This won't work properly until the server has reset the time for next coze
         this.startCoze = false;
         this.readyForCoze = false;
         this.gotNextCozeTime = false;
@@ -297,6 +297,7 @@ var CozePage = (function () {
         var _this = this;
         this.cozeTimer = setTimeout(function (x) {
             _this.timeToCoze -= 1;
+            _this.timeToCozeStr = _this.SecondstoStr(_this.timeToCoze);
             if (_this.timeToCoze < 3 && !_this.readyForCoze) {
                 _this.readyForCoze = true;
                 _this.ReadyForCoze();
@@ -378,6 +379,25 @@ var CozePage = (function () {
             });
         }, 3000);
     };
+    CozePage.prototype.SecondstoStr = function (_seconds) {
+        var hours = Math.floor(_seconds / 3600).toString();
+        var minutes = Math.floor((_seconds % 3600) / 60).toString();
+        var seconds = Math.floor(_seconds % 60).toString();
+        if (hours.length < 2) {
+            hours = "0" + hours;
+        }
+        ;
+        if (minutes.length < 2) {
+            minutes = "0" + minutes;
+        }
+        ;
+        if (seconds.length < 2) {
+            seconds = "0" + seconds;
+        }
+        ;
+        var str = hours + ":" + minutes + ":" + seconds;
+        return str;
+    };
     CozePage.prototype.GetPermissions = function () {
         /*this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.CAMERA).then(
           result => console.log('Has permission?',result.hasPermission),
@@ -392,7 +412,7 @@ var CozePage = (function () {
     };
     CozePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCoze}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.startCoze">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
+            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar>\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCozeStr}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.startCoze">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__["a" /* NativeAudio */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* Platform */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__["a" /* HTTP */],

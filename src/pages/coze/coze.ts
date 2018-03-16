@@ -23,6 +23,9 @@ export class CozePage {
   callTimer: number;
   callTimeLeft: any=0;
   callDuration: any=30;
+  timeToCozeStr: string = "-:-:-";
+
+  cozeHost: string = "http://middleware.ddns.net:5000"
 
   // Vars for RTC
   showCall: boolean;
@@ -263,6 +266,7 @@ export class CozePage {
     this.cozeTimer = setTimeout(x =>
       {
         this.timeToCoze -= 1;
+        this.timeToCozeStr = this.SecondstoStr(this.timeToCoze);
 
         if (this.timeToCoze  < 3 && !this.readyForCoze) {
             this.readyForCoze = true;
@@ -294,7 +298,7 @@ export class CozePage {
   }
 
   GetNextCozeTime() {
-    var url = 'http://middleware.ddns.net:5000/get_next_coze_time';
+    var url = this.cozeHost + '/get_next_coze_time';
     var $this = this;
     var getNextCozeTimeIntervalID = setInterval(function () {
       console.log("Trying to get next Coze time...");
@@ -316,7 +320,7 @@ export class CozePage {
   }
 
   ReadyForCoze() {
-    var url = 'http://middleware.ddns.net:5000/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
+    var url = this.cozeHost + '/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
     this.http.get(url, {}, {}).then(data => {
       console.log("Signaled 'Ready for Coze'")
     });
@@ -325,7 +329,7 @@ export class CozePage {
   GetMatch() {
     var attempt = 0
     var _partnerId = -1
-    var url = 'http://middleware.ddns.net:5000/get_match?webrtc_id=' + encodeURI(this.myCallId);
+    var url = this.cozeHost + '/get_match?webrtc_id=' + encodeURI(this.myCallId);
     var $this = this;
     var getMatchIntervalID = setInterval(function () {
       console.log("Attempt " + (attempt+1) + " at GetMatch()");
@@ -348,6 +352,17 @@ export class CozePage {
         console.log("End of GetMatch attempt");
       })
     }, 3000);
+  }
+
+  SecondstoStr(_seconds) {
+    var hours = Math.floor(_seconds/3600).toString();
+    var minutes = Math.floor((_seconds % 3600) / 60).toString();
+    var seconds = Math.floor(_seconds % 60).toString();
+    if (hours.length < 2) { hours = "0" + hours };
+    if (minutes.length < 2) { minutes = "0" + minutes };
+    if (seconds.length < 2) { seconds = "0" + seconds };
+    var str = hours + ":" + minutes + ":" + seconds;
+    return str
   }
 
   GetPermissions() {
