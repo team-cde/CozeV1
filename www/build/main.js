@@ -115,6 +115,7 @@ var CozePage = (function () {
         this.callTimeLeft = 0;
         this.callDuration = 30;
         this.timeToCozeStr = "-:-:-";
+        this.cozeHost = "http://middleware.ddns.net:5000";
         this.showControls = false;
         this.showRemoteVideo = true;
         this.showMyVideo = true;
@@ -325,7 +326,7 @@ var CozePage = (function () {
         }, 1000);
     };
     CozePage.prototype.GetNextCozeTime = function () {
-        var url = 'http://middleware.ddns.net:5000/get_next_coze_time';
+        var url = this.cozeHost + '/get_next_coze_time';
         var $this = this;
         var getNextCozeTimeIntervalID = setInterval(function () {
             console.log("Trying to get next Coze time...");
@@ -346,7 +347,7 @@ var CozePage = (function () {
         }, 3000);
     };
     CozePage.prototype.ReadyForCoze = function () {
-        var url = 'http://middleware.ddns.net:5000/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
+        var url = this.cozeHost + '/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
         this.http.get(url, {}, {}).then(function (data) {
             console.log("Signaled 'Ready for Coze'");
         });
@@ -354,7 +355,7 @@ var CozePage = (function () {
     CozePage.prototype.GetMatch = function () {
         var attempt = 0;
         var _partnerId = -1;
-        var url = 'http://middleware.ddns.net:5000/get_match?webrtc_id=' + encodeURI(this.myCallId);
+        var url = this.cozeHost + '/get_match?webrtc_id=' + encodeURI(this.myCallId);
         var $this = this;
         var getMatchIntervalID = setInterval(function () {
             console.log("Attempt " + (attempt + 1) + " at GetMatch()");
