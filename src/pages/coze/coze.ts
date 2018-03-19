@@ -221,7 +221,7 @@ export class CozePage {
     apiRTC.addEventListener("webRTCClientCreated", (e) => {
       console.log("webRTC Client Created");
       this.webRTCClient.setAllowMultipleCalls(true);
-      this.webRTCClient.setVideoBandwidth(300);
+      this.webRTCClient.setVideoBandwidth(500);
       this.webRTCClient.setUserAcceptOnIncomingCall(true);
 
       /*      this.InitializeControls();
