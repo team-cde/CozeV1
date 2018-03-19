@@ -25,7 +25,8 @@ export class CozePage {
   callDuration: any=30;
   timeToCozeStr: string = "-:-:-";
 
-  cozeHost: string = "http://middleware.ddns.net:5000"
+//ifconfig | grep inet | grep broadcast
+  cozeHost: string = "http://10.148.128.133:5000"
 
   // Vars for RTC
   showCall: boolean;
@@ -297,6 +298,11 @@ export class CozePage {
     }, 1000);
   }
 
+//coze states
+//waiting
+//matching
+//matched
+
   GetNextCozeTime() {
     var url = this.cozeHost + '/get_next_coze_time';
     var $this = this;
@@ -314,6 +320,8 @@ export class CozePage {
           console.log($this.timeToCoze);
           $this.gotNextCozeTime = true;
           $this.StartCozeTimer();
+        } else {
+          //missed the COze
         }
       });
     }, 3000);

@@ -8,6 +8,9 @@ import { FriendsPage } from '../pages/friends/friends';
 import { SettingsPage } from '../pages/settings/settings';
 import { TabsPage } from '../pages/tabs/tabs';
 import { LoginPage } from '../pages/login/login';
+import { SignUpPage } from "../pages/sign-up/sign-up";
+
+//import { SignUpPage } from '../pages/sign-up/sign-up'
 
 // Temporary until we get video chat working
 import { HomePage } from '../pages/home/home';
@@ -27,6 +30,7 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
 
 import { FIREBASE_CREDENTIALS } from './firebase.credentials';
 
+
 @NgModule({
   declarations: [
     MyApp,
@@ -35,7 +39,8 @@ import { FIREBASE_CREDENTIALS } from './firebase.credentials';
     SettingsPage,
     TabsPage,
     LoginPage,
-    HomePage
+    HomePage,
+    SignUpPage
   ],
   imports: [
     BrowserModule,
@@ -52,7 +57,8 @@ import { FIREBASE_CREDENTIALS } from './firebase.credentials';
     SettingsPage,
     TabsPage,
     LoginPage,
-    HomePage
+    HomePage,
+    SignUpPage
   ],
   providers: [
     NativeAudio,
