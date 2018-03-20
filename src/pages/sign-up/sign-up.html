@@ -15,23 +15,33 @@
 <ion-content padding>
 
   <ion-item>
-    <ion-label floating>Full Name</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-label floating>First Name</ion-label>
+    <ion-input type="text" [(ngModel)]="user.firstName"></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label floating>.EDU Email Address</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-label floating>Last Name</ion-label>
+    <ion-input type="text" [(ngModel)]="user.lastName"></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label floating>Residence Hall</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-label floating>University Email Address</ion-label>
+    <ion-input type="text" [(ngModel)]="user.email"></ion-input>
   </ion-item>
 
+  <ion-item>
+    <ion-label floating>Password</ion-label>
+    <ion-input type="password" [(ngModel)]="user.password"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label floating>Major (Optional)</ion-label>
+    <ion-input type="text" [(ngModel)]="user.major"></ion-input>
+  </ion-item>
 
   <ion-content padding>
-  <button ion-button color="secondary" (click)='signupButtonClicked()'>I'm Ready to Coze</button>
-
+  <button ion-button color="secondary" (click)='register(user)'>I'm Ready to Coze!</button>
+  <br><br>
+  {{error}}
 
 </ion-content>

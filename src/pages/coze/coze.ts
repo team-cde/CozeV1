@@ -3,7 +3,7 @@ import { NavController, Platform } from 'ionic-angular';
 import { NativeAudio } from '@ionic-native/native-audio';
 import { HTTP } from '@ionic-native/http';
 import { AndroidPermissions } from '@ionic-native/android-permissions';
-
+import { CONFIG } from '../../app/config';
 
 declare var apiRTC: any
 
@@ -25,9 +25,10 @@ export class CozePage {
   callDuration: any=30;
   timeToCozeStr: string = "-:-:-";
 
-//ifconfig | grep inet | grep broadcast
-  cozeHost: string = "http://10.148.128.133:5000"
-
+  //ifconfig | grep inet | grep broadcast
+  //cozeHost: string = "http://10.148.128.133:5000"
+  //cozeHost: string = "http://middleware.ddns.net:5000"
+  cozeHost: string = CONFIG.cozeHost;
   // Vars for RTC
   showCall: boolean;
   showHangup: boolean;
@@ -39,7 +40,7 @@ export class CozePage {
   showMyVideo: boolean = true;
   screenWidth: number;
   screenHeight: number;
-  debugmsg: string;
+  debugmsg: string = "";
   partnerId: number = -1;
 
   session;
@@ -60,22 +61,23 @@ export class CozePage {
 
       this.InitializeApiRTC();
 
+      /*
       this.nativeAudio.preloadComplex('uniqueI1', 'assets/tone.mp3', 1, 1, 0).then((succ)=>{
         console.log("suu",succ)
-      }, (err)=>{
+      }, (err)=> {
         console.log("err",err)
-      });
+      });*/
 
       this.screenWidth = platform.width();
       this.screenHeight = platform.height();
 
-      this.GetNextCozeTime();
-      // console.log(nextCozeTime)
-
-      //this.StartCozeTimer();
+      //this.GetNextCozeTime();
     });
   }
 
+  ionViewDidEnter() {
+    this.GetNextCozeTime();
+  }
   InitializeApiRTC() {
     //apiRTC initialization
     apiRTC.init({
@@ -116,11 +118,11 @@ export class CozePage {
     this.showAnswer = true;
     this.showReject = true;
     this.showHangup = true;
-    this.nativeAudio.loop('uniqueI1').then((succ)=>{
+    /*this.nativeAudio.loop('uniqueI1').then((succ)=>{
       console.log("succ",succ)
     }, (err)=>{
       console.log("err",err)
-    });
+    });*/
 
   }
 
@@ -252,7 +254,7 @@ export class CozePage {
   AnswerCall(incomingCallId) {
     console.log("AnswerCall");
     this.webRTCClient.acceptCall(incomingCallId);
-    this.nativeAudio.stop('uniqueI1').then(()=>{},()=>{});
+    //this.nativeAudio.stop('uniqueI1').then(()=>{},()=>{});
 
     this.UpdateControlsOnAnswer();
   }
@@ -264,6 +266,9 @@ export class CozePage {
   }
 
   StartCozeTimer(){
+    if (this.cozeTimer) {
+      window.clearTimeout(this.cozeTimer);
+    }
     this.cozeTimer = setTimeout(x =>
       {
         this.timeToCoze -= 1;
@@ -285,6 +290,9 @@ export class CozePage {
   }
 
   StartCallTimer(){
+    if (this.callTimer) {
+      window.clearTimeout(this.callTimer);
+    }
     this.callTimer = setTimeout(x =>
     {
       if (this.callTimeLeft <= 0) {}
@@ -315,11 +323,11 @@ export class CozePage {
           var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
           var timeNow = +new Date();
           $this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
+          $this.StartCozeTimer();
           console.log(nextCozeTime);
           console.log(new Date(nextCozeTime));
           console.log($this.timeToCoze);
           $this.gotNextCozeTime = true;
-          $this.StartCozeTimer();
         } else {
           //missed the COze
         }

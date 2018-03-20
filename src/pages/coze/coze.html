@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar color="primary">
     <ion-title>
       Coze
     </ion-title>
@@ -7,6 +7,7 @@
 </ion-header>
 
 <ion-content padding>
+  {{this.debugmsg}}
     <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">
       <ion-item>
         <h1 class="coze-timer-header">
@@ -58,6 +59,9 @@
         <ion-row *ngIf="showRemoteVideo">
             <ion-col>
                 <div id="remote" style="width:100%;"></div>
+            </ion-col>
+            <ion-col>
+                <button ion-button block color="danger" (click)='HangUp()'>Hangup</button>
             </ion-col>
         </ion-row>
         <ion-row *ngIf="showMyVideo">

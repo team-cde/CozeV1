@@ -29,7 +29,7 @@ import { HTTP } from '@ionic-native/http'
 import { AndroidPermissions } from '@ionic-native/android-permissions';
 
 import { FIREBASE_CREDENTIALS } from './firebase.credentials';
-
+import { FirebaseProvider } from '../providers/firebase/firebase';
 
 @NgModule({
   declarations: [
@@ -66,7 +66,8 @@ import { FIREBASE_CREDENTIALS } from './firebase.credentials';
     SplashScreen,
     HTTP,
     AndroidPermissions,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    FirebaseProvider,
   ]
 })
 export class AppModule {}
