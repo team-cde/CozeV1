@@ -12,8 +12,11 @@
       <ion-icon name="md-person" item-start></ion-icon>
       Allison A. from NYU
     </ion-item-->
-    <ion-item>
+    <ion-item *ngIf="!this.userFriends">
       No Coze Friends Yet!
+    </ion-item>
+    <ion-item *ngFor="let friend of this.userFriends">
+      {{friend}}
     </ion-item>
   </ion-list>
 </ion-content>

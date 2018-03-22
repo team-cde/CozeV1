@@ -23,6 +23,7 @@ export class LoginPage {
 
   constructor(private afAuth: AngularFireAuth,
     public navCtrl: NavController, public navParams: NavParams) {
+      console.log("On Login Page")
       /*this.afAuth.authState.subscribe(res => {
         if (res && res.uid) {
           this.navCtrl.setRoot(TabsPage);
@@ -33,10 +34,13 @@ export class LoginPage {
   }
 
   async login(user: User) {
+    console.log("Attempting login")
     try {
       const result = await this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password);
       if (result) {
         this.navCtrl.setRoot(TabsPage);
+      } else {
+        this.loginError = "Incorrect e-mail or password"
       }
     }
     catch (e) {

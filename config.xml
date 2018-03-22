@@ -21,6 +21,7 @@
     <preference name="SplashScreenDelay" value="5000" />
     <preference name="UseSwiftLanguageVersion" value="3" />
     <preference name="AndroidLaunchMode" value="singleTask" />
+    <preference name="loadUrlTimeoutValue" value="700000" />
     <platform name="android">
         <allow-intent href="market:*" />
         <icon density="ldpi" src="resources/android/icon/drawable-ldpi-icon.png" />
@@ -118,6 +119,7 @@
     <allow-navigation href="*" />
     <allow-navigation href="http://192.168.1.171:8100" />
     <plugin name="cordova-plugin-android-permissions" spec="^1.0.0" />
+    <allow-navigation href="http://10.132.128.228:8100" />
     <engine name="ios" spec="4.5.4" />
     <engine name="android" spec="7.0.0" />
 </widget>

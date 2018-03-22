@@ -4,6 +4,8 @@ import { NativeAudio } from '@ionic-native/native-audio';
 import { HTTP } from '@ionic-native/http';
 import { AndroidPermissions } from '@ionic-native/android-permissions';
 import { CONFIG } from '../../app/config';
+import { AngularFireAuth } from "angularfire2/auth";
+import { FirebaseProvider } from "../../providers/firebase/firebase";
 
 declare var apiRTC: any
 
@@ -22,7 +24,7 @@ export class CozePage {
   startCoze: boolean = false;
   callTimer: number;
   callTimeLeft: any=0;
-  callDuration: any=30;
+  callMaxDuration: any=30;
   timeToCozeStr: string = "-:-:-";
 
   //ifconfig | grep inet | grep broadcast
@@ -38,25 +40,34 @@ export class CozePage {
   showControls: boolean = false;
   showRemoteVideo: boolean = true;
   showMyVideo: boolean = true;
+  connected: boolean = false;
   screenWidth: number;
   screenHeight: number;
   debugmsg: string = "";
-  partnerId: number = -1;
+
+  myUserId: any;
+  partnerUserId: any;
+  myCallId: any;
+  partnerCallId: any;
+
+  partnerIsFriend: boolean = false;
 
   session;
   webRTCClient;
   incomingCallId = 0;
-  myCallId;
   status;
   calleeId;
 
   constructor(public navCtrl: NavController, private nativeAudio: NativeAudio,
       private platform: Platform, private http: HTTP,
-      private androidPermissions: AndroidPermissions
+      private androidPermissions: AndroidPermissions,
+      private afAuth: AngularFireAuth, public firebaseProvider: FirebaseProvider
     ) {
+    console.log("On Coze Page")
 
     platform.ready().then((readySource) => {
-
+      console.log("Coze Page: platform.ready")
+      this.myUserId = this.afAuth.auth.currentUser.uid;
       this.GetPermissions();
 
       this.InitializeApiRTC();
@@ -205,11 +216,14 @@ export class CozePage {
       }
       this.status = this.status + "<br/> The call has been hunged up due to the following reasons <br/> " + e.detail.reason;
       this.RemoveMediaElements(e.detail.callId);
+      this.CallDoneCleanup();
     });
 
+    // TODO: Add logging to database for coze's that happened (i.e. between whom and when, duration, etc)
     apiRTC.addEventListener("remoteStreamAdded", (e) => {
-      this.callTimeLeft = this.callDuration;
+      this.callTimeLeft = this.callMaxDuration;
       this.StartCallTimer();
+      this.connected = true;
       //var w = Math.min(this.screenWidth, this.screenHeight);
       //console.log(w);
       this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
@@ -244,11 +258,19 @@ export class CozePage {
   }
 
   HangUp() {
+    this.webRTCClient.hangUp(this.incomingCallId);
+  }
+
+  CallDoneCleanup() {
+    this.connected = false;
+    this.partnerCallId = null;
+    this.partnerUserId = null;
+    this.callTimeLeft = 0;
     this.startCoze = false;
     this.readyForCoze = false;
     this.gotNextCozeTime = false;
+    this.partnerIsFriend = false;
     this.GetNextCozeTime();
-    this.webRTCClient.hangUp(this.incomingCallId);
   }
 
   AnswerCall(incomingCallId) {
@@ -263,11 +285,12 @@ export class CozePage {
     this.webRTCClient.refuseCall(incomingCallId);
     this.UpdateControlsOnReject();
     this.RemoveMediaElements(incomingCallId);
+    this.CallDoneCleanup();
   }
 
   StartCozeTimer(){
     if (this.cozeTimer) {
-      window.clearTimeout(this.cozeTimer);
+      clearTimeout(this.cozeTimer);
     }
     this.cozeTimer = setTimeout(x =>
       {
@@ -291,7 +314,7 @@ export class CozePage {
 
   StartCallTimer(){
     if (this.callTimer) {
-      window.clearTimeout(this.callTimer);
+      clearTimeout(this.callTimer);
     }
     this.callTimer = setTimeout(x =>
     {
@@ -319,7 +342,7 @@ export class CozePage {
       $this.http.get(url, {}, {}).then(data => {
         var cozeState = JSON.parse(data.data)["coze_state"];
         if (cozeState == "waiting") {
-          window.clearInterval(getNextCozeTimeIntervalID);
+          clearInterval(getNextCozeTimeIntervalID);
           var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
           var timeNow = +new Date();
           $this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
@@ -336,36 +359,55 @@ export class CozePage {
   }
 
   ReadyForCoze() {
-    var url = this.cozeHost + '/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
-    this.http.get(url, {}, {}).then(data => {
+    //var url = this.cozeHost + '/ready_for_coze?user_id=' + encodeURI(this.myUserId);
+    var url = this.cozeHost + '/ready_for_coze';
+    this.http.get(url, {"user_id":this.myUserId, "webrtc_id":this.myCallId}, {}).then(data => {
       console.log("Signaled 'Ready for Coze'")
     });
   }
 
+  AddToFriends() {
+    this.firebaseProvider.addFriend(this.myUserId, this.partnerUserId);
+    this.partnerIsFriend = true;
+  }
+
   GetMatch() {
-    var attempt = 0
-    var _partnerId = -1
-    var url = this.cozeHost + '/get_match?webrtc_id=' + encodeURI(this.myCallId);
+    this.debugmsg = "Entered GetMatch()";
+    var attempt = 0;
+    //var url = this.cozeHost + '/get_match?user_id=' + encodeURI(this.myUserId);
+    var url = this.cozeHost + '/get_match';
     var $this = this;
     var getMatchIntervalID = setInterval(function () {
       console.log("Attempt " + (attempt+1) + " at GetMatch()");
-      $this.http.get(url, {}, {}).then(data => {
-        _partnerId = parseInt(JSON.parse(data.data)["partner_id"]);
-        console.log(_partnerId);
-        if (_partnerId == -1) {
+      $this.http.get(url, {"user_id":$this.myUserId}, {}).then(data => {
+        $this.debugmsg += data.data;
+        var result: any = JSON.parse(data.data);
+        $this.debugmsg += "\n" + ("partner_user_id" in result);
+        $this.debugmsg += "\n" + result["notin"];
+        if ("partner_user_id" in result && "partner_webrtc_id" in result) {
+          console.log("Found a match!");
+          $this.debugmsg += "\nFound a match!";
+          clearInterval(getMatchIntervalID);
+          $this.partnerUserId = result["partner_user_id"];
+          $this.partnerCallId = parseInt(result["partner_webrtc_id"]);
+          console.log($this.partnerUserId);
+          console.log($this.partnerCallId);
+          $this.debugmsg += "\n" + result["is_caller"]
+          if (result["is_caller"] == 1) {
+            $this.debugmsg += "\nMaking the call!";
+            // Only one person makes the call
+            $this.MakeCall($this.partnerCallId);
+          }
+        } else {
           console.log("Didn't find a match - trying again");
+          $this.debugmsg += "\nDidn't find a match yet...";
           attempt += 1;
           if (attempt >= 3) {
             console.log("Tried " + attempt + " times, quitting");
-            window.clearInterval(getMatchIntervalID);
+            clearInterval(getMatchIntervalID);
           }
-        } else {
-          console.log("Found a match: " + _partnerId);
-          //this.partnerId = _partnerId;
-          window.clearInterval(getMatchIntervalID);
-          $this.MakeCall(_partnerId);
-        }
         console.log("End of GetMatch attempt");
+        }
       })
     }, 3000);
   }

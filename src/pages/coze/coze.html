@@ -7,7 +7,6 @@
 </ion-header>
 
 <ion-content padding>
-  {{this.debugmsg}}
     <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">
       <ion-item>
         <h1 class="coze-timer-header">
@@ -29,7 +28,7 @@
             <ion-input type="text" [(ngModel)]="calleeId"></ion-input>
         </ion-item>
     </ion-list>
-    <ion-grid *ngIf="this.startCoze">
+    <ion-grid *ngIf="this.connected">
         <ion-row *ngIf="this.showControls">
           <h3>
             My Call ID: {{myCallId}}
@@ -58,7 +57,13 @@
         </ion-row>
         <ion-row *ngIf="showRemoteVideo">
             <ion-col>
-                <div id="remote" style="width:100%;"></div>
+                <div id="remote"></div>
+            </ion-col>
+            <ion-col *ngIf="!this.partnerIsFriend">
+                <button ion-button block (click)='AddToFriends()'>I feel a connection!</button>
+            </ion-col>
+            <ion-col *ngIf="this.partnerIsFriend">
+                <button ion-button block color="energized">You are friends!</button>
             </ion-col>
             <ion-col>
                 <button ion-button block color="danger" (click)='HangUp()'>Hangup</button>

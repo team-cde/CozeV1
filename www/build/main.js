@@ -1,6 +1,6 @@
 webpackJsonp([0],{
 
-/***/ 146:
+/***/ 147:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -13,11 +13,11 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 146;
+webpackEmptyAsyncContext.id = 147;
 
 /***/ }),
 
-/***/ 189:
+/***/ 190:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -30,21 +30,23 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 189;
+webpackEmptyAsyncContext.id = 190;
 
 /***/ }),
 
-/***/ 232:
+/***/ 233:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CozePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(126);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__ = __webpack_require__(233);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__ = __webpack_require__(234);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(127);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__ = __webpack_require__(234);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__ = __webpack_require__(235);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__app_config__ = __webpack_require__(359);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_angularfire2_auth__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__providers_firebase_firebase__ = __webpack_require__(71);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -60,21 +62,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
 var CozePage = (function () {
-    function CozePage(navCtrl, nativeAudio, platform, http, androidPermissions) {
+    function CozePage(navCtrl, nativeAudio, platform, http, androidPermissions, afAuth, firebaseProvider) {
         var _this = this;
         this.navCtrl = navCtrl;
         this.nativeAudio = nativeAudio;
         this.platform = platform;
         this.http = http;
         this.androidPermissions = androidPermissions;
+        this.afAuth = afAuth;
+        this.firebaseProvider = firebaseProvider;
         // TODO: This needs to be set to the countdown until the next Coze
         this.timeToCoze = 5;
         this.gotNextCozeTime = false;
         this.readyForCoze = false;
         this.startCoze = false;
         this.callTimeLeft = 0;
-        this.callDuration = 30;
+        this.callMaxDuration = 30;
         this.timeToCozeStr = "-:-:-";
         //ifconfig | grep inet | grep broadcast
         //cozeHost: string = "http://10.148.128.133:5000"
@@ -83,10 +89,14 @@ var CozePage = (function () {
         this.showControls = false;
         this.showRemoteVideo = true;
         this.showMyVideo = true;
+        this.connected = false;
         this.debugmsg = "";
-        this.partnerId = -1;
+        this.partnerIsFriend = false;
         this.incomingCallId = 0;
+        console.log("On Coze Page");
         platform.ready().then(function (readySource) {
+            console.log("Coze Page: platform.ready");
+            _this.myUserId = _this.afAuth.auth.currentUser.uid;
             _this.GetPermissions();
             _this.InitializeApiRTC();
             /*
@@ -212,10 +222,13 @@ var CozePage = (function () {
             }
             _this.status = _this.status + "<br/> The call has been hunged up due to the following reasons <br/> " + e.detail.reason;
             _this.RemoveMediaElements(e.detail.callId);
+            _this.CallDoneCleanup();
         });
+        // TODO: Add logging to database for coze's that happened (i.e. between whom and when, duration, etc)
         apiRTC.addEventListener("remoteStreamAdded", function (e) {
-            _this.callTimeLeft = _this.callDuration;
+            _this.callTimeLeft = _this.callMaxDuration;
             _this.StartCallTimer();
+            _this.connected = true;
             //var w = Math.min(this.screenWidth, this.screenHeight);
             //console.log(w);
             _this.webRTCClient.addStreamInDiv(e.detail.stream, e.detail.callType, "remote", 'remoteElt-' + e.detail.callId, {
@@ -244,11 +257,18 @@ var CozePage = (function () {
         }
     };
     CozePage.prototype.HangUp = function () {
+        this.webRTCClient.hangUp(this.incomingCallId);
+    };
+    CozePage.prototype.CallDoneCleanup = function () {
+        this.connected = false;
+        this.partnerCallId = null;
+        this.partnerUserId = null;
+        this.callTimeLeft = 0;
         this.startCoze = false;
         this.readyForCoze = false;
         this.gotNextCozeTime = false;
+        this.partnerIsFriend = false;
         this.GetNextCozeTime();
-        this.webRTCClient.hangUp(this.incomingCallId);
     };
     CozePage.prototype.AnswerCall = function (incomingCallId) {
         console.log("AnswerCall");
@@ -260,11 +280,12 @@ var CozePage = (function () {
         this.webRTCClient.refuseCall(incomingCallId);
         this.UpdateControlsOnReject();
         this.RemoveMediaElements(incomingCallId);
+        this.CallDoneCleanup();
     };
     CozePage.prototype.StartCozeTimer = function () {
         var _this = this;
         if (this.cozeTimer) {
-            window.clearTimeout(this.cozeTimer);
+            clearTimeout(this.cozeTimer);
         }
         this.cozeTimer = setTimeout(function (x) {
             _this.timeToCoze -= 1;
@@ -285,7 +306,7 @@ var CozePage = (function () {
     CozePage.prototype.StartCallTimer = function () {
         var _this = this;
         if (this.callTimer) {
-            window.clearTimeout(this.callTimer);
+            clearTimeout(this.callTimer);
         }
         this.callTimer = setTimeout(function (x) {
             if (_this.callTimeLeft <= 0) { }
@@ -310,7 +331,7 @@ var CozePage = (function () {
             $this.http.get(url, {}, {}).then(function (data) {
                 var cozeState = JSON.parse(data.data)["coze_state"];
                 if (cozeState == "waiting") {
-                    window.clearInterval(getNextCozeTimeIntervalID);
+                    clearInterval(getNextCozeTimeIntervalID);
                     var nextCozeTime = JSON.parse(data.data)["next_coze_time"];
                     var timeNow = +new Date();
                     $this.timeToCoze = Math.floor((+new Date(nextCozeTime) - timeNow) / 1000);
@@ -327,36 +348,54 @@ var CozePage = (function () {
         }, 3000);
     };
     CozePage.prototype.ReadyForCoze = function () {
-        var url = this.cozeHost + '/ready_for_coze?webrtc_id=' + encodeURI(this.myCallId);
-        this.http.get(url, {}, {}).then(function (data) {
+        //var url = this.cozeHost + '/ready_for_coze?user_id=' + encodeURI(this.myUserId);
+        var url = this.cozeHost + '/ready_for_coze';
+        this.http.get(url, { "user_id": this.myUserId, "webrtc_id": this.myCallId }, {}).then(function (data) {
             console.log("Signaled 'Ready for Coze'");
         });
     };
+    CozePage.prototype.AddToFriends = function () {
+        this.firebaseProvider.addFriend(this.myUserId, this.partnerUserId);
+        this.partnerIsFriend = true;
+    };
     CozePage.prototype.GetMatch = function () {
+        this.debugmsg = "Entered GetMatch()";
         var attempt = 0;
-        var _partnerId = -1;
-        var url = this.cozeHost + '/get_match?webrtc_id=' + encodeURI(this.myCallId);
+        //var url = this.cozeHost + '/get_match?user_id=' + encodeURI(this.myUserId);
+        var url = this.cozeHost + '/get_match';
         var $this = this;
         var getMatchIntervalID = setInterval(function () {
             console.log("Attempt " + (attempt + 1) + " at GetMatch()");
-            $this.http.get(url, {}, {}).then(function (data) {
-                _partnerId = parseInt(JSON.parse(data.data)["partner_id"]);
-                console.log(_partnerId);
-                if (_partnerId == -1) {
-                    console.log("Didn't find a match - trying again");
-                    attempt += 1;
-                    if (attempt >= 3) {
-                        console.log("Tried " + attempt + " times, quitting");
-                        window.clearInterval(getMatchIntervalID);
+            $this.http.get(url, { "user_id": $this.myUserId }, {}).then(function (data) {
+                $this.debugmsg += data.data;
+                var result = JSON.parse(data.data);
+                $this.debugmsg += "\n" + ("partner_user_id" in result);
+                $this.debugmsg += "\n" + result["notin"];
+                if ("partner_user_id" in result && "partner_webrtc_id" in result) {
+                    console.log("Found a match!");
+                    $this.debugmsg += "\nFound a match!";
+                    clearInterval(getMatchIntervalID);
+                    $this.partnerUserId = result["partner_user_id"];
+                    $this.partnerCallId = parseInt(result["partner_webrtc_id"]);
+                    console.log($this.partnerUserId);
+                    console.log($this.partnerCallId);
+                    $this.debugmsg += "\n" + result["is_caller"];
+                    if (result["is_caller"] == 1) {
+                        $this.debugmsg += "\nMaking the call!";
+                        // Only one person makes the call
+                        $this.MakeCall($this.partnerCallId);
                     }
                 }
                 else {
-                    console.log("Found a match: " + _partnerId);
-                    //this.partnerId = _partnerId;
-                    window.clearInterval(getMatchIntervalID);
-                    $this.MakeCall(_partnerId);
+                    console.log("Didn't find a match - trying again");
+                    $this.debugmsg += "\nDidn't find a match yet...";
+                    attempt += 1;
+                    if (attempt >= 3) {
+                        console.log("Tried " + attempt + " times, quitting");
+                        clearInterval(getMatchIntervalID);
+                    }
+                    console.log("End of GetMatch attempt");
                 }
-                console.log("End of GetMatch attempt");
             });
         }, 3000);
     };
@@ -393,11 +432,12 @@ var CozePage = (function () {
     };
     CozePage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  {{this.debugmsg}}\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCozeStr}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.startCoze">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <div id="remote" style="width:100%;"></div>\n            </ion-col>\n            <ion-col>\n                <button ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
+            selector: 'page-coze',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>\n      Coze\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n    <ion-list *ngIf="!this.startCoze && this.gotNextCozeTime">\n      <ion-item>\n        <h1 class="coze-timer-header">\n          Countdown to Next Coze:\n        </h1>\n      </ion-item>\n      <ion-item>\n        <h1 class="coze-timer">\n          {{this.timeToCozeStr}}\n        </h1>\n      </ion-item>\n    </ion-list>\n    <ion-list *ngIf="this.startCoze && !showRemoteVideo">\n        <ion-item>\n          <h3>Connecting to your partner...</h3>\n        </ion-item>\n        <ion-item *ngIf="this.showControls">\n            <ion-label floating>Call ID:</ion-label>\n            <ion-input type="text" [(ngModel)]="calleeId"></ion-input>\n        </ion-item>\n    </ion-list>\n    <ion-grid *ngIf="this.connected">\n        <ion-row *ngIf="this.showControls">\n          <h3>\n            My Call ID: {{myCallId}}\n          </h3>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showCall" ion-button block (click)=\'MakeCall(calleeId)\'>Call</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showHangup" ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <button *ngIf="showAnswer" ion-button block color="secondary" (click)=\'AnswerCall(incomingCallId)\'>Answer</button>\n            </ion-col>\n            <ion-col>\n                <button *ngIf="showReject" ion-button block color="danger">Reject</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="this.showControls">\n            <ion-col>\n                <p *ngIf="showStatus" [innerHtml]="status"></p>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showRemoteVideo">\n            <ion-col>\n                <div id="remote"></div>\n            </ion-col>\n            <ion-col *ngIf="!this.partnerIsFriend">\n                <button ion-button block (click)=\'AddToFriends()\'>I feel a connection!</button>\n            </ion-col>\n            <ion-col *ngIf="this.partnerIsFriend">\n                <button ion-button block color="energized">You are friends!</button>\n            </ion-col>\n            <ion-col>\n                <button ion-button block color="danger" (click)=\'HangUp()\'>Hangup</button>\n            </ion-col>\n        </ion-row>\n        <ion-row *ngIf="showMyVideo">\n            <ion-col>\n                <div id="mini"></div>\n            </ion-col>\n        </ion-row>\n    </ion-grid>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/coze/coze.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */], __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__["a" /* NativeAudio */],
             __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["f" /* Platform */], __WEBPACK_IMPORTED_MODULE_3__ionic_native_http__["a" /* HTTP */],
-            __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__["a" /* AndroidPermissions */]])
+            __WEBPACK_IMPORTED_MODULE_4__ionic_native_android_permissions__["a" /* AndroidPermissions */],
+            __WEBPACK_IMPORTED_MODULE_6_angularfire2_auth__["a" /* AngularFireAuth */], __WEBPACK_IMPORTED_MODULE_7__providers_firebase_firebase__["a" /* FirebaseProvider */]])
     ], CozePage);
     return CozePage;
 }());
@@ -406,15 +446,15 @@ var CozePage = (function () {
 
 /***/ }),
 
-/***/ 235:
+/***/ 285:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FriendsPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__providers_firebase_firebase__ = __webpack_require__(251);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__providers_firebase_firebase__ = __webpack_require__(71);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -430,27 +470,35 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 var FriendsPage = (function () {
     function FriendsPage(navCtrl, firebaseProvider, afAuth) {
+        var _this = this;
         this.navCtrl = navCtrl;
         this.firebaseProvider = firebaseProvider;
         this.afAuth = afAuth;
-        var userId = this.afAuth.auth.currentUser.uid;
-        var friendsList = this.firebaseProvider.getUserData(userId);
+        this.userFriends = null;
+        this.myUserId = this.afAuth.auth.currentUser.uid;
+        this.firebaseProvider.getUserData(this.myUserId).valueChanges()
+            .subscribe(function (ref) {
+            if ("friends" in ref) {
+                _this.userFriends = ref.friends;
+            }
+        });
     }
     FriendsPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-friends',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>\n      Friends\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <!--ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Allison A. from NYU\n    </ion-item-->\n    <ion-item>\n      No Coze Friends Yet!\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/
+            selector: 'page-friends',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>\n      Friends\n    </ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content>\n  <ion-list>\n    <!--ion-item>\n      <ion-icon name="md-person" item-start></ion-icon>\n      Allison A. from NYU\n    </ion-item-->\n    <ion-item *ngIf="!this.userFriends">\n      No Coze Friends Yet!\n    </ion-item>\n    <ion-item *ngFor="let friend of this.userFriends">\n      {{friend}}\n    </ion-item>\n  </ion-list>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/friends/friends.html"*/
         }),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__providers_firebase_firebase__["a" /* FirebaseProvider */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__providers_firebase_firebase__["a" /* FirebaseProvider */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__["a" /* AngularFireAuth */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__["a" /* AngularFireAuth */]) === "function" && _c || Object])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */],
+            __WEBPACK_IMPORTED_MODULE_3__providers_firebase_firebase__["a" /* FirebaseProvider */],
+            __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__["a" /* AngularFireAuth */]])
     ], FriendsPage);
     return FriendsPage;
-    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=friends.js.map
 
 /***/ }),
 
-/***/ 236:
+/***/ 286:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -474,7 +522,7 @@ var SettingsPage = (function () {
     }
     SettingsPage = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'page-settings',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>Settings</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h2>Profile</h2>\n  <h2>Prerefences</h2>\n  <h2>Report a Bug</h2>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/
+            selector: 'page-settings',template:/*ion-inline-start:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/'<ion-header>\n  <ion-navbar color="primary">\n    <ion-title>Settings</ion-title>\n  </ion-navbar>\n</ion-header>\n\n<ion-content padding>\n  <h2>Profile</h2>\n  <h2>Report a Bug</h2>\n  <h2>Log Out</h2>\n</ion-content>\n'/*ion-inline-end:"/Users/evan/workspace/StartupStudio/CozeApp/src/pages/settings/settings.html"*/
         }),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["d" /* NavController */]])
     ], SettingsPage);
@@ -485,16 +533,16 @@ var SettingsPage = (function () {
 
 /***/ }),
 
-/***/ 237:
+/***/ 287:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LoginPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tabs_tabs__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__sign_up_sign_up__ = __webpack_require__(250);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tabs_tabs__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__sign_up_sign_up__ = __webpack_require__(288);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -557,6 +605,7 @@ var LoginPage = (function () {
         this.navParams = navParams;
         this.showLogin = false;
         this.user = {};
+        console.log("On Login Page");
         /*this.afAuth.authState.subscribe(res => {
           if (res && res.uid) {
             this.navCtrl.setRoot(TabsPage);
@@ -571,19 +620,25 @@ var LoginPage = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password)];
+                        console.log("Attempting login");
+                        _a.label = 1;
                     case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password)];
+                    case 2:
                         result = _a.sent();
                         if (result) {
                             this.navCtrl.setRoot(__WEBPACK_IMPORTED_MODULE_3__tabs_tabs__["a" /* TabsPage */]);
                         }
-                        return [3 /*break*/, 3];
-                    case 2:
+                        else {
+                            this.loginError = "Incorrect e-mail or password";
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_1 = _a.sent();
                         console.error(e_1);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -614,16 +669,16 @@ var LoginPage = (function () {
 
 /***/ }),
 
-/***/ 250:
+/***/ 288:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SignUpPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tabs_tabs__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__providers_firebase_firebase__ = __webpack_require__(251);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angularfire2_auth__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tabs_tabs__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__providers_firebase_firebase__ = __webpack_require__(71);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -737,56 +792,6 @@ var SignUpPage = (function () {
 
 /***/ }),
 
-/***/ 251:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FirebaseProvider; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angularfire2_database__ = __webpack_require__(252);
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-
-/*
-  Generated class for the FirebaseProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
-var FirebaseProvider = (function () {
-    function FirebaseProvider(afd) {
-        this.afd = afd;
-        console.log('Hello FirebaseProvider Provider');
-    }
-    FirebaseProvider.prototype.getUserData = function (userId) {
-        return this.afd.list('users/' + userId);
-    };
-    FirebaseProvider.prototype.addUser = function (userId, email, firstName, lastName, major) {
-        var newUser = { "email": email, "firstName": firstName,
-            "lastName": lastName, "major": major, "friends": {} };
-        this.afd.database.ref('users/' + userId)
-            .set(newUser);
-    };
-    FirebaseProvider = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_angularfire2_database__["a" /* AngularFireDatabase */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_angularfire2_database__["a" /* AngularFireDatabase */]) === "function" && _a || Object])
-    ], FirebaseProvider);
-    return FirebaseProvider;
-    var _a;
-}());
-
-//# sourceMappingURL=firebase.js.map
-
-/***/ }),
-
 /***/ 289:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -810,23 +815,23 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__(350);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_coze_coze__ = __webpack_require__(232);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__ = __webpack_require__(235);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__ = __webpack_require__(236);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_login_login__ = __webpack_require__(237);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_sign_up_sign_up__ = __webpack_require__(250);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_coze_coze__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_friends_friends__ = __webpack_require__(285);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pages_settings_settings__ = __webpack_require__(286);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__pages_tabs_tabs__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__pages_login_login__ = __webpack_require__(287);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_sign_up_sign_up__ = __webpack_require__(288);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__pages_home_home__ = __webpack_require__(447);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_status_bar__ = __webpack_require__(229);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__ionic_native_splash_screen__ = __webpack_require__(231);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ionic_native_native_audio__ = __webpack_require__(126);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angularfire2__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_auth__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_angularfire2_database__ = __webpack_require__(252);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ionic_native_http__ = __webpack_require__(233);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__ionic_native_android_permissions__ = __webpack_require__(234);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ionic_native_status_bar__ = __webpack_require__(230);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__ionic_native_splash_screen__ = __webpack_require__(232);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ionic_native_native_audio__ = __webpack_require__(127);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angularfire2__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angularfire2_auth__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_angularfire2_database__ = __webpack_require__(248);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__ionic_native_http__ = __webpack_require__(234);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__ionic_native_android_permissions__ = __webpack_require__(235);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__firebase_credentials__ = __webpack_require__(448);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__providers_firebase_firebase__ = __webpack_require__(251);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__providers_firebase_firebase__ = __webpack_require__(71);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -916,11 +921,11 @@ var AppModule = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(229);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(231);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_tabs_tabs__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_login_login__ = __webpack_require__(237);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_angularfire2_auth__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(230);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(232);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_tabs_tabs__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_login_login__ = __webpack_require__(287);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_angularfire2_auth__ = __webpack_require__(41);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -946,6 +951,7 @@ var MyApp = (function () {
     function MyApp(platform, statusBar, splashScreen, afAuth) {
         var _this = this;
         this.afAuth = afAuth;
+        console.log("App.Component Constructor");
         platform.ready().then(function () {
             // Okay, so the platform is ready and our plugins are available.
             // Here you can do any higher level native things you might need.
@@ -980,7 +986,7 @@ var MyApp = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CONFIG; });
 var CONFIG = {
-    cozeHost: "http://bearnet.dyndns.org:5000",
+    cozeHost: "http://middleware.ddns.net:5000",
 };
 //# sourceMappingURL=config.js.map
 
@@ -993,7 +999,7 @@ var CONFIG = {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HomePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(126);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_native_audio__ = __webpack_require__(127);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1193,15 +1199,15 @@ var FIREBASE_CREDENTIALS = {
 
 /***/ }),
 
-/***/ 69:
+/***/ 70:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TabsPage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__coze_coze__ = __webpack_require__(232);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__friends_friends__ = __webpack_require__(235);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__settings_settings__ = __webpack_require__(236);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__coze_coze__ = __webpack_require__(233);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__friends_friends__ = __webpack_require__(285);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__settings_settings__ = __webpack_require__(286);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1231,6 +1237,70 @@ var TabsPage = (function () {
 }());
 
 //# sourceMappingURL=tabs.js.map
+
+/***/ }),
+
+/***/ 71:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FirebaseProvider; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angularfire2_database__ = __webpack_require__(248);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+/*
+  Generated class for the FirebaseProvider provider.
+
+  See https://angular.io/guide/dependency-injection for more info on providers
+  and Angular DI.
+*/
+var FirebaseProvider = (function () {
+    function FirebaseProvider(afd) {
+        this.afd = afd;
+        console.log('Hello FirebaseProvider Provider');
+    }
+    FirebaseProvider.prototype.getUserData = function (userId) {
+        var itemRef;
+        itemRef = this.afd.object("users/" + userId);
+        return itemRef;
+        //return this.afd.object('users/' + userId);
+    };
+    FirebaseProvider.prototype.addUser = function (userId, email, firstName, lastName, major) {
+        var newUser = { "email": email, "firstName": firstName,
+            "lastName": lastName, "major": major, "friends": {} };
+        this.afd.database.ref("users/" + userId)
+            .set(newUser);
+    };
+    // Using getUserData for now - this is a placeholder for later implementation
+    FirebaseProvider.prototype.getUserFriends = function (userId) {
+        var itemRef;
+        itemRef = this.afd.object("users/" + userId + "/friends");
+        return itemRef;
+    };
+    FirebaseProvider.prototype.addFriend = function (userId, friendId) {
+        // TODO: Don't add friend until partner agrees!
+        var newFriend = { friendId: { "dateAdded": new Date() } };
+        this.afd.database.ref("users/" + userId + "/friends")
+            .push(newFriend);
+    };
+    FirebaseProvider = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_angularfire2_database__["a" /* AngularFireDatabase */]])
+    ], FirebaseProvider);
+    return FirebaseProvider;
+}());
+
+//# sourceMappingURL=firebase.js.map
 
 /***/ })
 
